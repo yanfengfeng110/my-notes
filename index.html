@@ -1,0 +1,3765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudNotes | 隐私加密笔记与导航</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#020617">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markmap-lib"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markmap-view"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gradient-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+        }
+
+        .note-card {
+            transition: all 0.3s ease;
+        }
+
+        .note-card:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        ::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        /* 统一的Markdown预览样式 - 用于编辑模式和分享页面 */
+        .markdown-preview {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            overflow-wrap: break-word;
+        }
+
+        .markdown-preview h1 {
+            font-size: 2em;
+            font-weight: 800;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.3em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .markdown-preview h2 {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-preview h3 {
+            font-size: 1.25em;
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-preview h4 {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-preview p {
+            margin-bottom: 1em;
+        }
+
+        .markdown-preview ul,
+        .markdown-preview ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+        }
+
+        .markdown-preview li {
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-preview code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2em 0.4em;
+            border-radius: 0.25em;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        .markdown-preview pre {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1em;
+            border-radius: 0.5em;
+            overflow-x: auto;
+            margin-bottom: 1.5em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .markdown-preview blockquote {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1em;
+            margin-left: 0;
+            margin-bottom: 1.5em;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .markdown-preview table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1.5em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .markdown-preview th,
+        .markdown-preview td {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75em;
+            text-align: left;
+        }
+
+        .markdown-preview th {
+            background: rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+        }
+
+        .markdown-preview a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .markdown-preview a:hover {
+            text-decoration: underline;
+        }
+
+        .markdown-preview img {
+            max-width: 100%;
+            border-radius: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        .markdown-preview hr {
+            border: none;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 2em 0;
+        }
+
+        .markdown-preview strong {
+            font-weight: 700;
+        }
+
+        .markdown-preview em {
+            font-style: italic;
+        }
+
+        .markdown-preview del {
+            text-decoration: line-through;
+        }
+
+        .tab-button {
+            padding: 0.75em 1.5em;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border-radius: 0.5em;
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-button.active {
+            color: #60a5fa;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .hljs {
+            background: transparent !important;
+        }
+
+        .login-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-5px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(5px);
+            }
+        }
+
+        .login-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #3b82f6;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .share-gradient {
+            background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+        }
+
+        .share-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(220, 38, 38, 0.4);
+        }
+
+        .nav-gradient {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .nav-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.4);
+        }
+
+        .nav-link-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 0.25em 0.75em;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .icon-blue {
+            color: #60a5fa;
+        }
+
+        .icon-green {
+            color: #34d399;
+        }
+
+        .icon-purple {
+            color: #a78bfa;
+        }
+
+        .icon-red {
+            color: #f87171;
+        }
+
+        .icon-yellow {
+            color: #fbbf24;
+        }
+
+        .icon-pink {
+            color: #f472b6;
+        }
+
+        .icon-indigo {
+            color: #818cf8;
+        }
+
+        .quick-access-bar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quick-access-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .quick-access-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .modal-enter {
+            animation: modalEnter 0.3s ease-out;
+        }
+
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+
+            .quick-access-bar {
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .quick-access-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* 新增：顶部控制栏按钮样式 */
+        .toggle-btn {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .toggle-btn:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .toggle-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-btn.expanded i {
+            transform: rotate(180deg);
+        }
+
+        /* 字符顺序消失动画相关样式 */
+        .burning-text {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .burning-char {
+            display: inline-block;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .char-burning {
+            opacity: 0.1;
+            transform: translateY(8px) scale(0.85);
+            filter: blur(1.5px);
+            color: #ff6b6b !important;
+        }
+
+        .char-removed {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(15px) scale(0.7);
+        }
+
+        .current-burning {
+            position: relative;
+            z-index: 10;
+        }
+
+        .current-burning::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            border-radius: 2px;
+            z-index: -1;
+            animation: glow 0.8s ease-in-out infinite alternate;
+            opacity: 0.5;
+        }
+
+        @keyframes glow {
+            from {
+                opacity: 0.3;
+                box-shadow: 0 0 5px #ff6b6b;
+            }
+
+            to {
+                opacity: 0.6;
+                box-shadow: 0 0 10px #ffa500, 0 0 20px #ff6b6b;
+            }
+        }
+
+        .fire-trail {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 0 6px #ff6b6b;
+            animation: fireTrail 0.8s ease-out forwards;
+        }
+
+        @keyframes fireTrail {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx, 0), var(--ty, -20px)) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        .burn-progress-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #dc2626, #f97316);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            margin-top: 4px;
+        }
+
+        .burn-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(220, 38, 38, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.3);
+            animation: notificationSlide 0.5s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes notificationSlide {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .burn-cursor {
+            position: absolute;
+            width: 2px;
+            height: 1.2em;
+            background: #ff6b6b;
+            animation: cursorBlink 1s infinite;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes cursorBlink {
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .typewriter-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: 0.15em;
+        }
+
+        /* Toast 通知样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .share-btn {
+            transition: all 0.3s ease;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Markdown工具栏样式 */
+        .markdown-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-toolbar button {
+            padding: 0.5rem 0.75rem;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .markdown-toolbar button:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .markdown-toolbar button i {
+            font-size: 0.75rem;
+        }
+
+        /* ========== 防截图/录屏专用样式（保留模糊，移除水印） ========== */
+        .burn-blur {
+            filter: blur(12px) !important;
+            transition: filter 0.2s ease;
+        }
+
+        #mindmapPreviewSvg .markmap-foreign,
+        #editMindmapSvg .markmap-foreign {
+            color: #e2e8f0;
+        }
+        #mindmapPreviewSvg .markmap-foreign code,
+        #editMindmapSvg .markmap-foreign code {
+            color: #f8fafc;
+            background: rgba(0,0,0,0.4);
+        }
+        #mindmapPreviewSvg .markmap-foreign a,
+        #editMindmapSvg .markmap-foreign a {
+            color: #60a5fa;
+        }
+        #mindmapPreviewSvg .markmap-node circle,
+        #editMindmapSvg .markmap-node circle {
+            stroke: #60a5fa;
+        }
+        #mindmapPreviewSvg .markmap-node circle[fill="#fff"],
+        #editMindmapSvg .markmap-node circle[fill="#fff"] {
+            fill: #1e293b;
+        }
+        #mindmapPreviewSvg .markmap-link line,
+        #editMindmapSvg .markmap-link line {
+            stroke: #475569;
+        }
+        #mindmapPreviewSvg .markmap-foreign.mindmap-editing,
+        #editMindmapSvg .markmap-foreign.mindmap-editing {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 6px;
+            background: rgba(59, 130, 246, 0.12);
+            caret-color: #60a5fa;
+        }
+        #mindmapPreviewSvg .markmap-foreign.mindmap-editing *,
+        #editMindmapSvg .markmap-foreign.mindmap-editing * {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen selection:bg-blue-500/30">
+    <!-- Toast 通知容器 -->
+    <div id="toastContainer"></div>
+
+    <!-- 认证模态框 -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 login-bg hidden">
+        <div class="glass w-full max-w-md p-10 rounded-[2.5rem] shadow-2xl space-y-8">
+            <div class="text-center space-y-4">
+                <div class="inline-flex p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full text-5xl">🔐</div>
+                <div class="space-y-2">
+                    <h1 class="text-3xl font-extrabold tracking-tight italic">CloudNotes</h1>
+                    <p class="text-slate-400 leading-relaxed text-sm">私有加密笔记与导航系统<br>请输入访问密码以继续</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <label class="text-xs uppercase tracking-widest text-slate-400 font-bold ml-1">
+                        访问密码
+                        <span id="attemptsCount" class="text-rose-500 text-xs ml-2">剩余尝试次数: 5</span>
+                    </label>
+                    <input id="authPassword" type="password"
+                        class="w-full bg-slate-900/70 border border-slate-700 p-5 rounded-2xl outline-none focus:ring-2 ring-blue-500/50 text-center font-mono text-lg"
+                        placeholder="请输入密码"
+                        autocomplete="off"
+                        onkeydown="if(event.key === 'Enter') checkPassword()">
+                    <p class="text-xs text-slate-500 text-center">
+                        提示：请联系管理员获取访问密码
+                    </p>
+                </div>
+
+                <button onclick="checkPassword()" id="verifyBtn"
+                    class="w-full gradient-btn text-white py-5 rounded-2xl font-black tracking-widest uppercase text-sm shadow-xl hover:shadow-2xl transition-all">
+                    验证身份
+                </button>
+
+                <div id="loadingSpinner" class="hidden text-center py-4">
+                    <div class="loader mx-auto"></div>
+                    <p class="text-slate-400 mt-4 text-sm">验证中...</p>
+                </div>
+
+                <div class="pt-6 border-t border-white/5 text-center">
+                    <p class="text-xs text-slate-500">
+                        🔒 安全提示：请勿在公共设备上保存密码
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主应用容器 -->
+    <div id="appContainer" class="hidden">
+        <div id="app" class="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        </div>
+    </div>
+
+    <!-- 快速访问栏 -->
+    <div id="quickAccessBar" class="quick-access-bar hidden">
+        <button onclick="showAddNavLinkModal()" class="quick-access-btn nav-gradient text-white" title="添加导航链接">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button onclick="showAddNoteModal()" class="quick-access-btn gradient-btn text-white" title="添加笔记">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button onclick="scrollToTop()" class="quick-access-btn glass text-white" title="返回顶部">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <!-- 系统配置模态框 -->
+    <div id="settingsModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] shadow-2xl space-y-6 modal-enter">
+            <h2 class="text-2xl font-extrabold tracking-tight">⚙️ 系统配置</h2>
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1">Worker
+                        服务地址</label>
+                    <input id="setApi" type="text" placeholder="https://..."
+                        class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 ring-blue-500/50 text-sm transition-all">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1">管理员密钥</label>
+                    <input id="setKey" type="password" placeholder="••••••••"
+                        class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 ring-blue-500/50 text-sm transition-all">
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeSettings()"
+                    class="flex-1 py-4 text-slate-400 font-semibold rounded-2xl hover:bg-slate-800 transition">取消</button>
+                <button onclick="saveSettings()"
+                    class="flex-1 py-4 gradient-btn text-white font-bold rounded-2xl">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑笔记模态框 -->
+    <div id="editModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div
+            class="glass w-full max-w-6xl p-8 rounded-[2.5rem] shadow-2xl space-y-6 max-h-[95vh] overflow-hidden flex flex-col modal-enter">
+            <h2 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                <span class="text-blue-400">✏️</span> 编辑笔记
+                <span id="editNoteId" class="text-sm text-slate-400 ml-2 font-mono"></span>
+            </h2>
+
+            <div class="flex gap-2 mb-4">
+                <button onclick="switchTab('edit')" class="tab-button active" id="editTabBtn">编辑模式</button>
+                <button onclick="switchTab('preview')" class="tab-button" id="previewTabBtn">预览模式</button>
+            </div>
+
+            <div class="space-y-4 flex-1 overflow-hidden flex flex-col min-h-0">
+                <!-- 编辑模式：左右分栏 - 编辑器 + 实时思维导图 -->
+                <div id="editTab" class="flex-1 flex flex-row gap-4 min-h-0 overflow-hidden">
+                    <!-- 左侧：编辑器 -->
+                    <div class="flex-1 flex flex-col min-h-0 w-1/2">
+                        <div class="markdown-toolbar">
+                            <button onclick="insertMarkdown('# ', '标题')" title="一级标题">
+                                <i class="fas fa-heading"></i> H1
+                            </button>
+                            <button onclick="insertMarkdown('## ', '二级标题')" title="二级标题">
+                                <i class="fas fa-heading"></i> H2
+                            </button>
+                            <button onclick="insertMarkdown('### ', '三级标题')" title="三级标题">
+                                <i class="fas fa-heading"></i> H3
+                            </button>
+                            <button onclick="insertMarkdown('**', '粗体文本')" title="粗体">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button onclick="insertMarkdown('*', '斜体文本')" title="斜体">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button onclick="insertMarkdown('~~', '删除线文本')" title="删除线">
+                                <i class="fas fa-strikethrough"></i>
+                            </button>
+                            <button onclick="insertMarkdown('- ', '列表项')" title="无序列表">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button onclick="insertMarkdown('1. ', '有序列表')" title="有序列表">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                            <button onclick="insertMarkdown('[链接文本](https://)', '')" title="链接">
+                                <i class="fas fa-link"></i>
+                            </button>
+                            <button onclick="insertMarkdown('![替代文本](https://)', '')" title="图片">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <button onclick="insertMarkdown('> ', '引用文本')" title="引用">
+                                <i class="fas fa-quote-right"></i>
+                            </button>
+                            <button onclick="insertMarkdown('```javascript\n\n```', '代码')" title="代码块">
+                                <i class="fas fa-code"></i>
+                            </button>
+                            <button onclick="insertMarkdown('---\n', '')" title="分割线">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button onclick="insertMarkdown('| 表头 | 表头 |\n|------|------|\n| 内容 | 内容 |', '')"
+                                title="表格">
+                                <i class="fas fa-table"></i>
+                            </button>
+                            <button onclick="insertMarkdown('- [ ] ', '任务项')" title="任务列表">
+                                <i class="fas fa-tasks"></i>
+                            </button>
+                        </div>
+
+                        <div
+                            class="flex-1 min-h-0 border border-slate-800 rounded-2xl overflow-hidden bg-slate-950/50 relative">
+                            <textarea id="editNoteContent"
+                                class="w-full h-full bg-transparent p-5 outline-none text-sm transition-all resize-none leading-relaxed font-mono min-h-[45vh] border-0"
+                                placeholder="# 标题&#10;&#10;## 二级标题&#10;&#10;- 列表项&#10;- 另一个列表项&#10;&#10;**粗体** *斜体* &#10;&#10;```javascript&#10;// 代码块&#10;console.log('Hello');&#10;```&#10;&#10;> 引用内容&#10;&#10;| 表头1 | 表头2 |&#10;|--------|--------&#10;| 单元格1 | 单元格2 |"></textarea>
+
+                            <div class="absolute bottom-3 right-4">
+                                <div class="text-xs text-slate-500 bg-slate-900/70 px-2 py-1 rounded">
+                                    <span id="editCharCount">0</span> 字符
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：实时思维导图预览 -->
+                    <div class="flex-1 flex flex-col min-h-0 w-1/2">
+                        <div class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 flex items-center gap-2">
+                            <span>🧠 思维导图预览</span>
+                            <span class="text-[8px] text-slate-500 font-normal normal-case tracking-normal">实时更新</span>
+                        </div>
+                        <div class="flex-1 bg-slate-950/50 border border-slate-800 rounded-2xl overflow-hidden relative p-1">
+                            <svg id="editMindmapSvg" class="w-full h-full" style="min-height:45vh"></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="previewTab" class="flex-1 overflow-y-auto hidden min-h-0">
+                    <div class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        Markdown 预览
+                    </div>
+                    <div id="markdownPreview"
+                        class="markdown-preview p-5 bg-slate-950/50 border border-slate-800 rounded-2xl flex-1 overflow-y-auto min-h-[60vh]">
+                        <!-- 预览内容将通过JS动态填充 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-6 border-t border-white/5">
+                <button onclick="closeEdit()"
+                    class="flex-1 py-4 text-slate-400 font-semibold rounded-2xl hover:bg-slate-800 transition">
+                    取消
+                </button>
+                <button onclick="saveEdit()"
+                    class="flex-1 py-4 gradient-btn text-white font-bold rounded-2xl">
+                    保存更改
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 快速添加笔记模态框 -->
+    <div id="addNoteModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="glass w-full max-w-2xl p-8 rounded-[2.5rem] shadow-2xl space-y-6 modal-enter">
+            <h2 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                <span class="text-blue-400">📝</span> 快速添加笔记
+            </h2>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        解密主密码
+                    </label>
+                    <input id="quickMainPw" type="password" placeholder="输入主密码以加密"
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-blue-500/50 transition-all font-mono">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        笔记内容
+                    </label>
+                    <textarea id="quickNoteInput" placeholder="输入笔记内容..."
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 h-40 rounded-2xl outline-none focus:bg-slate-950 transition-all resize-none leading-relaxed"></textarea>
+                    <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
+                        <span id="quickNoteCharCount">0</span> 字符
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeAddNoteModal()"
+                    class="flex-1 py-4 text-slate-400 font-semibold rounded-2xl hover:bg-slate-800 transition">
+                    取消
+                </button>
+                <button onclick="quickSaveNote()"
+                    class="flex-1 py-4 gradient-btn text-white font-bold rounded-2xl">
+                    保存笔记
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加导航链接模态框 -->
+    <div id="addNavLinkModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="glass w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl space-y-6 modal-enter">
+            <h2 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                <span class="text-purple-400">🔗</span> 添加导航链接
+            </h2>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        链接标题
+                    </label>
+                    <input id="navLinkTitle" type="text" placeholder="例如：GitHub"
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-purple-500/50 transition-all">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        链接地址
+                    </label>
+                    <input id="navLinkUrl" type="text" placeholder="https://..."
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-purple-500/50 transition-all font-mono text-sm">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        分类标签
+                    </label>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        <button onclick="setNavCategory('开发工具')"
+                            class="px-3 py-1 bg-blue-900/30 text-blue-400 rounded-lg hover:bg-blue-800/50 transition text-xs">开发工具</button>
+                        <button onclick="setNavCategory('日常效率')"
+                            class="px-3 py-1 bg-green-900/30 text-green-400 rounded-lg hover:bg-green-800/50 transition text-xs">日常效率</button>
+                        <button onclick="setNavCategory('设计资源')"
+                            class="px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-800/50 transition text-xs">设计资源</button>
+                        <button onclick="setNavCategory('学习资源')"
+                            class="px-3 py-1 bg-yellow-900/30 text-yellow-400 rounded-lg hover:bg-yellow-800/50 transition text-xs">学习资源</button>
+                        <button onclick="setNavCategory('社交娱乐')"
+                            class="px-3 py-1 bg-pink-900/30 text-pink-400 rounded-lg hover:bg-pink-800/50 transition text-xs">社交娱乐</button>
+                    </div>
+                    <input id="navLinkCategory" type="text" placeholder="自定义分类或选择上方标签"
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-purple-500/50 transition-all">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        图标选择
+                    </label>
+                    <div class="flex flex-wrap gap-3 mb-2">
+                        <button onclick="setNavIcon('fas fa-globe', 'icon-blue')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-globe icon-blue"></i></button>
+                        <button onclick="setNavIcon('fas fa-code', 'icon-green')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-code icon-green"></i></button>
+                        <button onclick="setNavIcon('fas fa-tools', 'icon-yellow')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-tools icon-yellow"></i></button>
+                        <button onclick="setNavIcon('fas fa-palette', 'icon-purple')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-palette icon-purple"></i></button>
+                        <button onclick="setNavIcon('fas fa-book', 'icon-indigo')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-book icon-indigo"></i></button>
+                        <button onclick="setNavIcon('fas fa-film', 'icon-pink')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-film icon-pink"></i></button>
+                    </div>
+                    <input id="navLinkIcon" type="hidden" value="fas fa-globe">
+                    <input id="navLinkIconColor" type="hidden" value="icon-blue">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        描述（可选）
+                    </label>
+                    <textarea id="navLinkDescription" placeholder="链接的简要描述..."
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 h-24 rounded-2xl outline-none focus:bg-slate-950 transition-all resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeAddNavLinkModal()"
+                    class="flex-1 py-4 text-slate-400 font-semibold rounded-2xl hover:bg-slate-800 transition">
+                    取消
+                </button>
+                <button onclick="saveNavLink()"
+                    class="flex-1 py-4 nav-gradient text-white font-bold rounded-2xl">
+                    保存链接
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑导航链接模态框 -->
+    <div id="editNavLinkModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="glass w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl space-y-6 modal-enter">
+            <h2 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                <span class="text-purple-400">✏️</span> 编辑导航链接
+                <span id="editNavLinkId" class="text-sm text-slate-400 ml-2 font-mono"></span>
+            </h2>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        链接标题
+                    </label>
+                    <input id="editNavLinkTitle" type="text" placeholder="例如：GitHub"
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-purple-500/50 transition-all">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        链接地址
+                    </label>
+                    <input id="editNavLinkUrl" type="text" placeholder="https://..."
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-purple-500/50 transition-all font-mono text-sm">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        分类标签
+                    </label>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        <button onclick="setEditNavCategory('开发工具')"
+                            class="px-3 py-1 bg-blue-900/30 text-blue-400 rounded-lg hover:bg-blue-800/50 transition text-xs">开发工具</button>
+                        <button onclick="setEditNavCategory('日常效率')"
+                            class="px-3 py-1 bg-green-900/30 text-green-400 rounded-lg hover:bg-green-800/50 transition text-xs">日常效率</button>
+                        <button onclick="setEditNavCategory('设计资源')"
+                            class="px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-800/50 transition text-xs">设计资源</button>
+                        <button onclick="setEditNavCategory('学习资源')"
+                            class="px-3 py-1 bg-yellow-900/30 text-yellow-400 rounded-lg hover:bg-yellow-800/50 transition text-xs">学习资源</button>
+                        <button onclick="setEditNavCategory('社交娱乐')"
+                            class="px-3 py-1 bg-pink-900/30 text-pink-400 rounded-lg hover:bg-pink-800/50 transition text-xs">社交娱乐</button>
+                    </div>
+                    <input id="editNavLinkCategory" type="text" placeholder="自定义分类或选择上方标签"
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-purple-500/50 transition-all">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        图标选择
+                    </label>
+                    <div class="flex flex-wrap gap-3 mb-2">
+                        <button onclick="setEditNavIcon('fas fa-globe', 'icon-blue')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-globe icon-blue"></i></button>
+                        <button onclick="setEditNavIcon('fas fa-code', 'icon-green')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-code icon-green"></i></button>
+                        <button onclick="setEditNavIcon('fas fa-tools', 'icon-yellow')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-tools icon-yellow"></i></button>
+                        <button onclick="setEditNavIcon('fas fa-palette', 'icon-purple')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-palette icon-purple"></i></button>
+                        <button onclick="setEditNavIcon('fas fa-book', 'icon-indigo')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-book icon-indigo"></i></button>
+                        <button onclick="setEditNavIcon('fas fa-film', 'icon-pink')"
+                            class="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"><i
+                                class="fas fa-film icon-pink"></i></button>
+                    </div>
+                    <div id="editNavIconPreview" class="text-center py-2">
+                    </div>
+                    <input id="editNavLinkIcon" type="hidden">
+                    <input id="editNavLinkIconColor" type="hidden">
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                        描述（可选）
+                    </label>
+                    <textarea id="editNavLinkDescription" placeholder="链接的简要描述..."
+                        class="w-full bg-slate-950/50 border border-slate-800 p-4 h-24 rounded-2xl outline-none focus:bg-slate-950 transition-all resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeEditNavLinkModal()"
+                    class="flex-1 py-4 text-slate-400 font-semibold rounded-2xl hover:bg-slate-800 transition">
+                    取消
+                </button>
+                <button onclick="updateNavLink()"
+                    class="flex-1 py-4 nav-gradient text-white font-bold rounded-2xl">
+                    更新链接
+                </button>
+            </div>
+
+            <div class="pt-4 border-t border-white/5">
+                <button onclick="confirmDeleteNavLink()"
+                    class="w-full py-3 bg-rose-900/30 text-rose-400 rounded-2xl hover:bg-rose-800/50 transition font-semibold">
+                    🗑️ 删除此链接
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 思维导图预览模态框 -->
+    <div id="mindmapPreviewModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-2 md:p-4">
+        <div class="glass w-full max-w-6xl p-4 md:p-8 rounded-[2.5rem] shadow-2xl space-y-3 h-[95vh] flex flex-col modal-enter">
+            <div class="flex justify-between items-center shrink-0">
+                <h2 class="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                    <span class="text-emerald-400">🧠</span> 思维导图
+                    <span id="mindmapPreviewId" class="text-sm text-slate-400 ml-2 font-mono"></span>
+                </h2>
+                <div class="flex gap-2 items-center">
+                    <button onclick="fitMindmapPreview()" class="px-3 py-1 glass text-emerald-400 rounded-xl hover:bg-slate-700/50 transition text-sm flex items-center gap-1">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </button>
+                    <button onclick="closeMindmapPreview()" class="px-3 py-1 glass text-slate-400 rounded-xl hover:text-white transition text-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 min-h-0 rounded-2xl overflow-hidden" style="background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.1);">
+                <svg id="mindmapPreviewSvg" style="width:100%;height:100%;"></svg>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 系统配置 ====================
+        const urlParams = new URLSearchParams(window.location.search);
+        let apiFromUrl = urlParams.get('api');
+        const cfgFromUrl = urlParams.get('cfg');
+        if (cfgFromUrl) {
+            try {
+                apiFromUrl = atob(cfgFromUrl);
+            } catch (e) {}
+        }
+        const shareId = urlParams.get('share');
+
+        let API_URL = apiFromUrl || localStorage.getItem('cf_notes_api') || "";
+        let ADMIN_KEY = localStorage.getItem('cf_notes_key') || "";
+
+        let currentEditId = null;
+        let currentEditNavLinkId = null;
+
+        let notesCache = {};
+        let navLinksCache = {};
+        let currentView = 'notes';
+
+        // ==================== 阅后即焚变量 ====================
+        let burningInterval = null;
+        let burnCountdownInterval = null;
+        let burnTimeLeft = 10; // 10秒后自动开始焚毁
+        let originalContent = '';
+        let burningChars = [];
+        let isBurningActive = false;
+        let totalChars = 0;
+        let currentCharIndex = 0; // 当前正在焚毁的字符索引
+        let burnCursor = null; // 焚毁光标
+
+        const app = document.getElementById('app');
+
+        // ==================== 安全配置 ====================
+        const SESSION_KEY = 'cloudnotes_auth_token';
+        const ATTEMPTS_KEY = 'cloudnotes_auth_attempts';
+        const MAX_ATTEMPTS = 5;
+        const LOCKOUT_TIME = 300000;
+        const LOCKOUT_KEY = 'cloudnotes_lockout_until';
+
+        // ==================== 加解密逻辑 ====================
+        async function getK(pw) {
+            const enc = new TextEncoder();
+            const hash = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+            return await crypto.subtle.importKey('raw', hash, {
+                name: 'AES-GCM'
+            }, false, ['encrypt', 'decrypt']);
+        }
+
+        async function encrypt(text, pw) {
+            const enc = new TextEncoder();
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await getK(pw);
+            const cipher = await crypto.subtle.encrypt({
+                name: 'AES-GCM',
+                iv
+            }, key, enc.encode(text));
+            return btoa(JSON.stringify({
+                iv: Array.from(iv),
+                data: Array.from(new Uint8Array(cipher))
+            }));
+        }
+
+        async function decrypt(json, pw) {
+            try {
+                const {
+                    iv,
+                    data
+                } = JSON.parse(atob(json));
+                const key = await getK(pw);
+                const dec = await crypto.subtle.decrypt({
+                    name: 'AES-GCM',
+                    iv: new Uint8Array(iv)
+                }, key, new Uint8Array(data));
+                return new TextDecoder().decode(dec);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Markdown 配置 - 确保与分享页面一致
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            pedantic: false,
+            smartLists: true,
+            smartypants: true,
+            xhtml: false,
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, {
+                            language: lang
+                        }).value;
+                    } catch (__) {}
+                }
+                return hljs.highlightAuto(code).value;
+            }
+        });
+
+        // ==================== 安全验证函数 ====================
+        function checkLockout() {
+            const lockoutUntil = localStorage.getItem(LOCKOUT_KEY);
+            if (lockoutUntil && Date.now() < parseInt(lockoutUntil)) {
+                const remainingMinutes = Math.ceil((parseInt(lockoutUntil) - Date.now()) / 60000);
+                return {
+                    locked: true,
+                    remainingMinutes: remainingMinutes
+                };
+            }
+            return {
+                locked: false
+            };
+        }
+
+        function setLockout() {
+            const lockoutUntil = Date.now() + LOCKOUT_TIME;
+            localStorage.setItem(LOCKOUT_KEY, lockoutUntil.toString());
+
+            setTimeout(() => {
+                localStorage.removeItem(LOCKOUT_KEY);
+                localStorage.removeItem(ATTEMPTS_KEY);
+                location.reload();
+            }, LOCKOUT_TIME);
+        }
+
+        function getRemainingAttempts() {
+            const attempts = localStorage.getItem(ATTEMPTS_KEY);
+            return attempts ? MAX_ATTEMPTS - parseInt(attempts) : MAX_ATTEMPTS;
+        }
+
+        function incrementFailedAttempts() {
+            let attempts = localStorage.getItem(ATTEMPTS_KEY);
+            attempts = attempts ? parseInt(attempts) + 1 : 1;
+            localStorage.setItem(ATTEMPTS_KEY, attempts.toString());
+
+            if (attempts >= MAX_ATTEMPTS) {
+                setLockout();
+            }
+
+            return attempts;
+        }
+
+        function resetFailedAttempts() {
+            localStorage.removeItem(ATTEMPTS_KEY);
+            localStorage.removeItem(LOCKOUT_KEY);
+        }
+
+        // ==================== 主验证函数 ====================
+        async function checkPassword() {
+            const lockoutCheck = checkLockout();
+            const input = document.getElementById('authPassword');
+            const attemptsCount = document.getElementById('attemptsCount');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            if (lockoutCheck.locked) {
+                attemptsCount.innerHTML = `账户已锁定，${lockoutCheck.remainingMinutes}分钟后重试`;
+                input.value = '';
+                input.classList.add('login-shake');
+                input.disabled = true;
+                verifyBtn.disabled = true;
+                setTimeout(() => input.classList.remove('login-shake'), 500);
+                return;
+            }
+
+            const password = input.value.trim();
+            const remainingAttempts = getRemainingAttempts() - 1;
+
+            if (!password) {
+                attemptsCount.innerHTML = '密码不能为空';
+                input.classList.add('login-shake');
+                setTimeout(() => {
+                    input.classList.remove('login-shake');
+                    attemptsCount.innerHTML = `剩余尝试次数: ${remainingAttempts + 1}`;
+                }, 500);
+                return;
+            }
+
+            verifyBtn.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+            input.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/verify-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const token = btoa(Date.now() + '-' + Math.random().toString(36).substr(2));
+                    sessionStorage.setItem(SESSION_KEY, token);
+
+                    resetFailedAttempts();
+
+                    document.getElementById('authModal').classList.add('hidden');
+                    document.getElementById('appContainer').classList.remove('hidden');
+
+                    initApp();
+                } else {
+                    const attempts = incrementFailedAttempts();
+                    const newRemaining = MAX_ATTEMPTS - attempts;
+
+                    if (attempts >= MAX_ATTEMPTS) {
+                        attemptsCount.innerHTML = '账户已锁定，5分钟后重试';
+                        setLockout();
+                    } else {
+                        attemptsCount.innerHTML = `密码错误，剩余尝试次数: ${newRemaining}`;
+                    }
+
+                    input.value = '';
+                    input.classList.add('login-shake');
+                    setTimeout(() => input.classList.remove('login-shake'), 500);
+                }
+            } catch (error) {
+                console.error("验证失败:", error);
+                attemptsCount.innerHTML = '网络错误，请检查配置';
+                input.value = '';
+                input.classList.add('login-shake');
+                setTimeout(() => {
+                    input.classList.remove('login-shake');
+                    attemptsCount.innerHTML = `剩余尝试次数: ${remainingAttempts + 1}`;
+                }, 500);
+            } finally {
+                verifyBtn.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+                input.disabled = false;
+                input.focus();
+            }
+        }
+
+        // 登出
+        function logout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem(ATTEMPTS_KEY);
+            localStorage.removeItem(LOCKOUT_KEY);
+            location.reload();
+        }
+
+        // ==================== 应用初始化逻辑 ====================
+        function initApp() {
+            if (shareId) {
+                renderShareView();
+            } else if (!API_URL) {
+                renderWelcomeView();
+            } else {
+                renderMainView();
+            }
+        }
+
+        // 检查会话
+        function checkSession() {
+            const token = sessionStorage.getItem(SESSION_KEY);
+            const apiUrl = localStorage.getItem('cf_notes_api');
+
+            if (shareId) {
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                initApp();
+                return true;
+            }
+
+            if (!apiUrl) {
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('appContainer').classList.remove('hidden');
+                initApp();
+                return false;
+            }
+
+            if (token) {
+                try {
+                    const parts = atob(token).split('-');
+                    if (parts.length === 2) {
+                        const timestamp = parseInt(parts[0]);
+                        const now = Date.now();
+                        if (now - timestamp < 8 * 60 * 60 * 1000) {
+                            document.getElementById('authModal').classList.add('hidden');
+                            document.getElementById('appContainer').classList.remove('hidden');
+                            initApp();
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Token验证失败:', e);
+                }
+            }
+
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+
+            const lockoutCheck = checkLockout();
+            if (lockoutCheck.locked) {
+                const attemptsCount = document.getElementById('attemptsCount');
+                attemptsCount.innerHTML = `账户已锁定，${lockoutCheck.remainingMinutes}分钟后重试`;
+                document.getElementById('authPassword').disabled = true;
+                document.getElementById('verifyBtn').disabled = true;
+            } else {
+                const remaining = getRemainingAttempts();
+                const attemptsCount = document.getElementById('attemptsCount');
+                attemptsCount.innerHTML = `剩余尝试次数: ${remaining}`;
+                document.getElementById('authPassword').disabled = false;
+                document.getElementById('verifyBtn').disabled = false;
+            }
+
+            return false;
+        }
+
+        // ==================== 视图渲染函数 ====================
+        function renderWelcomeView() {
+            app.innerHTML = `
+            <div class="glass p-12 rounded-[3rem] text-center space-y-8 animate-in fade-in zoom-in duration-700">
+                <div class="inline-flex p-5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full text-5xl">🚀</div>
+                <div class="space-y-2">
+                    <h1 class="text-4xl font-extrabold tracking-tight italic">CloudNotes</h1>
+                    <p class="text-slate-400 leading-relaxed">您的专属加密笔记与个人导航系统<br>请先关联您的 Cloudflare Worker 后端</p>
+                </div>
+                <button onclick="configUrl()" class="px-10 py-5 gradient-btn text-white font-black rounded-3xl shadow-2xl">初始化配置</button>
+            </div>
+        `;
+        }
+
+        function renderMainView() {
+            app.innerHTML = `
+            <div class="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <header class="flex justify-between items-end">
+                    <div class="space-y-1">
+                        <h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-white to-slate-500 bg-clip-text text-transparent">CloudNotes</h1>
+                        <p class="text-[10px] uppercase tracking-[0.3em] text-blue-500 font-black">端到端加密笔记 | 个人导航中心</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                    <div class="flex gap-2">
+                        <button onclick="switchView('notes')" class="px-4 py-2 rounded-xl ${currentView === 'notes' ? 'gradient-btn text-white' : 'glass text-slate-400'} transition">📝 笔记</button>
+                        <button onclick="switchView('nav')" class="px-4 py-2 rounded-xl ${currentView === 'nav' ? 'nav-gradient text-white' : 'glass text-slate-400'} transition">🔗 导航</button>
+                    </div>
+                        <button onclick="logout()" class="text-xs text-slate-400 hover:text-white transition px-3 py-1 glass rounded-full" title="退出登录">
+                            退出
+                        </button>
+                        <button onclick="configUrl()" class="p-4 glass rounded-2xl hover:rotate-180 transition-all duration-500 text-xl">⚙️</button>
+                    </div>
+                </header>
+
+                <div id="notesView" class="${currentView === 'notes' ? '' : 'hidden'}">
+                    <main class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-6 border-white/5 mb-8">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 mb-2 block">
+                                    解密主密码
+                                </label>
+                                <input id="mainPw" type="password" placeholder="输入主密码以加密/解密数据" 
+                                    class="w-full bg-slate-950/50 border border-slate-800 p-4 rounded-2xl outline-none focus:ring-2 ring-blue-500/50 transition-all font-mono">
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold ml-1 block">
+                                        笔记内容 (支持 Markdown 格式)
+                                    </label>
+                                    <button onclick="showMarkdownHelp()" class="text-xs text-blue-400 hover:text-blue-300 transition">📖 Markdown 语法帮助</button>
+                                </div>
+                                <textarea id="noteInput" placeholder="# 输入您的 Markdown 笔记...&#10;&#10;## 支持功能&#10;- 标题、列表、代码块&#10;- **粗体**、*斜体*、[链接]()&#10;- 表格、引用、分割线" 
+                                    class="w-full bg-slate-950/50 border border-slate-800 p-5 h-64 rounded-2xl outline-none focus:bg-slate-950 transition-all resize-none leading-relaxed font-mono"></textarea>
+                                <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
+                                    <span id="noteCharCount">0</span> 字符
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="doSave()" class="gradient-btn text-white py-5 rounded-2xl font-black tracking-widest uppercase text-xs hover:shadow-lg transition">加密存入云端</button>
+                            <button onclick="doAI()" class="glass text-purple-400 py-5 rounded-2xl font-black tracking-widest uppercase text-xs hover:bg-purple-500/10 transition border-purple-500/20">✨ AI 智能总结</button>
+                        </div>
+                    </main>
+
+                    <section class="space-y-6">
+                        <div class="flex justify-between items-center px-4">
+                            <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500 italic">Vault / 我的加密库</h2>
+                            <div class="flex gap-2">
+                                <button onclick="showMarkdownHelp()" class="text-blue-400 text-xs font-black hover:underline">Markdown 语法</button>
+                                <button onclick="loadNotesList()" class="text-blue-500 text-xs font-black hover:underline uppercase">刷新列表</button>
+                            </div>
+                        </div>
+                        <div id="notesList" class="space-y-6">
+                            <div class="text-center py-20 text-slate-600 italic text-sm">配置完成后输入密码并点击刷新。</div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="navView" class="${currentView === 'nav' ? '' : 'hidden'}">
+                    <main class="glass p-8 rounded-[2.5rem] shadow-2xl space-y-6 border-white/5 mb-8">
+                        <div class="space-y-4">
+                            <div class="text-center space-y-2">
+                                <h2 class="text-2xl font-extrabold tracking-tight text-purple-300">🔗 个人导航中心</h2>
+                                <p class="text-slate-400 text-sm">管理您的常用链接，快速访问重要资源</p>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-3 justify-center">
+                                <button onclick="showAddNavLinkModal()" class="px-6 py-3 nav-gradient text-white rounded-2xl font-bold hover:shadow-lg transition flex items-center gap-2">
+                                    <i class="fas fa-plus"></i> 添加链接
+                                </button>
+                                <button onclick="loadNavLinks()" class="px-6 py-3 glass text-purple-400 rounded-2xl font-bold hover:bg-purple-500/10 transition flex items-center gap-2">
+                                    <i class="fas fa-sync-alt"></i> 刷新列表
+                                </button>
+                                <button onclick="exportNavLinks()" class="px-6 py-3 glass text-emerald-400 rounded-2xl font-bold hover:bg-emerald-500/10 transition flex items-center gap-2">
+                                    <i class="fas fa-download"></i> 导出备份
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+
+                    <section class="space-y-8">
+                        <div class="flex justify-between items-center px-4">
+                            <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500 italic">Navigation / 我的链接库</h2>
+                            <div class="text-xs text-slate-500" id="navStats">
+                            </div>
+                        </div>
+                        
+                        <div id="navCategories" class="space-y-8">
+                            <div class="text-center py-20 text-slate-600 italic text-sm">点击"刷新列表"加载您的导航链接</div>
+                        </div>
+                    </section>
+                </div>
+                
+                <footer class="text-center pt-8 pb-4 opacity-50 hover:opacity-100 transition duration-500">
+                    <span class="text-3xl font-black uppercase tracking-widest text-red-500">
+                        蒼天已死，黃天當立
+                    </span>
+                </footer>
+            </div>
+        `;
+
+            // 添加字符计数监听
+            const noteInput = document.getElementById('noteInput');
+            const noteCharCount = document.getElementById('noteCharCount');
+            if (noteInput && noteCharCount) {
+                noteInput.addEventListener('input', function() {
+                    noteCharCount.textContent = this.value.length;
+                });
+            }
+
+            // 加载默认视图数据
+            if (currentView === 'notes') {} else {
+                loadNavLinks();
+            }
+
+            // 显示快速访问栏
+            document.getElementById('quickAccessBar').classList.remove('hidden');
+        }
+
+        // ==================== 防截图/录屏专用函数（仅保留窗口模糊、阻止打印/截图快捷键，移除动态水印）====================
+        let antiScreenshotActive = false;
+
+        function applyAntiScreenshotProtection() {
+            const shareResultDiv = document.querySelector('.share-result-container');
+            if (!shareResultDiv) return;
+            if (antiScreenshotActive) return;
+
+            // 1. 窗口失焦/聚焦时模糊/恢复
+            const onBlur = () => {
+                document.getElementById('burningContent')?.classList.add('burn-blur');
+            };
+            const onFocus = () => {
+                document.getElementById('burningContent')?.classList.remove('burn-blur');
+            };
+            window.addEventListener('blur', onBlur);
+            window.addEventListener('focus', onFocus);
+
+            // 2. 页面可见性变化（切换到后台/锁屏）时模糊
+            const onVisibilityChange = () => {
+                if (document.hidden) {
+                    document.getElementById('burningContent')?.classList.add('burn-blur');
+                } else {
+                    document.getElementById('burningContent')?.classList.remove('burn-blur');
+                }
+            };
+            document.addEventListener('visibilitychange', onVisibilityChange);
+
+            // 3. 阻止打印（Ctrl+P 等）
+            const onBeforePrint = (e) => {
+                e.preventDefault();
+                showToast('📵 该内容禁止打印', 'error');
+                return false;
+            };
+            window.addEventListener('beforeprint', onBeforePrint);
+
+            // 4. 阻止部分截图快捷键（PrintScreen 无法完全阻止，但可弹窗警告）
+            const onKeyDown = (e) => {
+                // Ctrl+P
+                if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                    e.preventDefault();
+                    showToast('📵 禁止打印/截图', 'error');
+                    return false;
+                }
+                // PrintScreen 没有标准 key，部分浏览器支持 'PrintScreen' 或通过组合键
+                if (e.key === 'PrintScreen' || e.code === 'PrintScreen') {
+                    e.preventDefault();
+                    showToast('📵 禁止截图', 'error');
+                    return false;
+                }
+                // 阻止 Ctrl+Shift+I (DevTools) 与截图关联，但增加难度
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') {
+                    e.preventDefault();
+                    return false;
+                }
+                // 阻止 Ctrl+U (查看源码)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                    e.preventDefault();
+                    return false;
+                }
+            };
+            window.addEventListener('keydown', onKeyDown);
+
+            // 存储事件处理器以便移除
+            window.__burnBlurHandler = onBlur;
+            window.__burnFocusHandler = onFocus;
+            window.__burnVisibilityHandler = onVisibilityChange;
+            window.__burnPrintHandler = onBeforePrint;
+            window.__burnKeyHandler = onKeyDown;
+
+            antiScreenshotActive = true;
+        }
+
+        function removeAntiScreenshotProtection() {
+            if (!antiScreenshotActive) return;
+
+            // 移除事件监听
+            if (window.__burnBlurHandler) {
+                window.removeEventListener('blur', window.__burnBlurHandler);
+                window.removeEventListener('focus', window.__burnFocusHandler);
+            }
+            if (window.__burnVisibilityHandler) {
+                document.removeEventListener('visibilitychange', window.__burnVisibilityHandler);
+            }
+            if (window.__burnPrintHandler) {
+                window.removeEventListener('beforeprint', window.__burnPrintHandler);
+            }
+            if (window.__burnKeyHandler) {
+                window.removeEventListener('keydown', window.__burnKeyHandler);
+            }
+
+            // 移除模糊类
+            document.getElementById('burningContent')?.classList.remove('burn-blur');
+
+            // 清除全局引用
+            window.__burnBlurHandler = null;
+            window.__burnFocusHandler = null;
+            window.__burnVisibilityHandler = null;
+            window.__burnPrintHandler = null;
+            window.__burnKeyHandler = null;
+
+            antiScreenshotActive = false;
+        }
+
+        // ==================== 阅后即焚渲染（已移除返回主页按钮）====================
+        function renderShareView() {
+            app.innerHTML = `
+            <div class="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <header class="flex justify-between items-end">
+                    <div class="space-y-1">
+                        <h1 class="text-4xl font-extrabold tracking-tighter bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">CloudNotes</h1>
+                        <p class="text-[10px] uppercase tracking-[0.3em] text-orange-500 font-black">阅后即焚 | 分享解密</p>
+                    </div>
+                </header>
+
+                <main class="glass p-12 rounded-[3rem] shadow-2xl text-center space-y-8">
+                    <div class="text-6xl animate-bounce">🔥</div>
+                    <div class="space-y-2">
+                        <h1 class="text-3xl font-black italic">阅后即焚解密</h1>
+                        <p class="text-slate-400 text-sm">解密后数据将立即从服务器物理擦除</p>
+                    </div>
+                    <input id="sharePw" type="password" placeholder="请输入 6 位以上解密密码" 
+                           class="w-full bg-slate-950/50 border border-slate-800 p-5 rounded-2xl outline-none focus:ring-2 ring-orange-500/50 text-center font-mono">
+                    <button id="unlockBtn" onclick="doUnlockShare()" 
+                            class="w-full share-gradient text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-[1.02] transition">
+                        解密并销毁
+                    </button>
+                    <div id="shareResult" class="mt-8 hidden share-result-container">
+                        <div class="text-left p-6 bg-slate-950/50 rounded-2xl border border-orange-500/20 ring-1 ring-orange-500/10 shadow-inner leading-relaxed">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-xs uppercase tracking-widest text-slate-400 font-bold">阅后即焚内容</span>
+                                <button onclick="startBurnAnimation()" id="burnNowBtn" class="text-xs text-orange-500 hover:text-red-500 transition font-bold uppercase tracking-widest flex items-center gap-2">
+                                    <i class="fas fa-fire"></i>
+                                    <span>立即焚毁</span>
+                                </button>
+                            </div>
+                            <div id="burningContent" class="markdown-preview relative" style="user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;"></div>
+                            <div class="mt-4 pt-4 border-t border-orange-500/10 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div id="burnProgress" class="text-xs text-slate-500">
+                                        已焚毁: <span id="charsBurned">0</span>/<span id="totalChars">0</span>
+                                        <span id="burnPercentage" class="ml-2 text-orange-500">0%</span>
+                                    </div>
+                                    <div id="burnTimer" class="text-xs text-orange-500 hidden flex items-center gap-2">
+                                        <i class="fas fa-clock animate-pulse"></i>
+                                        <span id="timeLeft">10</span>秒后自动焚毁
+                                    </div>
+                                </div>
+                                <div class="w-full bg-slate-800/50 h-2 rounded-full overflow-hidden">
+                                    <div id="burnProgressBar" class="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+                                <div class="text-xs text-slate-500 flex justify-between">
+                                    <span>开始</span>
+                                    <span id="burnSpeed">速度: 中</span>
+                                    <span>结束</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                
+                <footer class="text-center pt-8 pb-4 opacity-50 hover:opacity-100 transition duration-500">
+                    <span class="text-3xl font-black uppercase tracking-widest text-red-500">
+                        蒼天已死，黃天當立
+                    </span>
+                </footer>
+            </div>
+        `;
+
+            // 添加回车键支持
+            const sharePwInput = document.getElementById('sharePw');
+            if (sharePwInput) {
+                sharePwInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        doUnlockShare();
+                    }
+                });
+            }
+
+            // 禁止复制阅后即焚内容（防止选择/复制）
+            const burningContent = document.getElementById('burningContent');
+            if (burningContent) {
+                burningContent.style.userSelect = 'none';
+                burningContent.style.webkitUserSelect = 'none';
+                burningContent.style.MozUserSelect = 'none';
+                burningContent.style.msUserSelect = 'none';
+                burningContent.addEventListener('copy', (e) => e.preventDefault());
+                burningContent.addEventListener('cut', (e) => e.preventDefault());
+                burningContent.addEventListener('contextmenu', (e) => e.preventDefault());
+                burningContent.addEventListener('selectstart', (e) => e.preventDefault());
+                burningContent.addEventListener('dragstart', (e) => e.preventDefault());
+            }
+        }
+
+        // ==================== 视图切换 ====================
+        function switchView(view) {
+            currentView = view;
+            renderMainView();
+        }
+
+        // ==================== 导航功能 ====================
+        async function loadNavLinks() {
+            try {
+                const response = await fetch(`${API_URL}/api/nav/list`, {
+                    headers: {
+                        'Authorization': ADMIN_KEY
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('获取导航链接失败');
+                }
+
+                const navLinks = await response.json();
+
+                navLinksCache = {};
+                navLinks.forEach(link => {
+                    navLinksCache[link.id] = link;
+                });
+
+                const categories = {};
+                navLinks.forEach(link => {
+                    const category = link.category || '未分类';
+                    if (!categories[category]) {
+                        categories[category] = [];
+                    }
+                    categories[category].push(link);
+                });
+
+                const navCategoriesDiv = document.getElementById('navCategories');
+                if (navLinks.length === 0) {
+                    navCategoriesDiv.innerHTML = `
+                        <div class="text-center py-20 space-y-4">
+                            <div class="text-5xl text-slate-700">🔗</div>
+                            <p class="text-slate-600 italic">暂无导航链接，点击"添加链接"开始创建</p>
+                        </div>
+                    `;
+                    document.getElementById('navStats').textContent = '0 个链接';
+                    return;
+                }
+
+                let html = '';
+                const categoryNames = Object.keys(categories).sort();
+
+                categoryNames.forEach(category => {
+                    const links = categories[category];
+                    html += `
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-bold text-slate-300 flex items-center gap-2">
+                                <span class="category-tag bg-purple-900/30 text-purple-400">${category}</span>
+                                <span class="text-sm text-slate-500">(${links.length}个链接)</span>
+                            </h3>
+                            <div class="nav-grid">
+                    `;
+
+                    links.forEach(link => {
+                        const iconClass = link.icon || 'fas fa-globe';
+                        const iconColor = link.icon_color || 'icon-blue';
+                        const description = link.description ? `<p class="text-xs text-slate-500 mt-1 line-clamp-2">${link.description}</p>` : '';
+
+                        html += `
+                            <div class="nav-link-card glass p-5 rounded-2xl space-y-3 cursor-pointer" onclick="openLinkInNewTab('${link.url}')" title="点击访问: ${link.url}">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-slate-800/50 rounded-lg">
+                                            <i class="${iconClass} ${iconColor} text-lg"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="font-bold text-slate-200">${link.title}</h4>
+                                            ${description}
+                                        </div>
+                                    </div>
+                                    <button onclick="event.stopPropagation(); editNavLink(${link.id})" class="p-2 text-slate-500 hover:text-purple-400 transition" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-center text-xs text-slate-500">
+                                    <span class="truncate font-mono" title="${link.url}">${link.url.replace(/https?:\/\//, '')}</span>
+                                    <span>${new Date(link.created_at).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+
+                navCategoriesDiv.innerHTML = html;
+
+                document.getElementById('navStats').textContent = `${navLinks.length} 个链接，${categoryNames.length} 个分类`;
+
+            } catch (error) {
+                console.error('加载导航链接失败:', error);
+                const navCategoriesDiv = document.getElementById('navCategories');
+                navCategoriesDiv.innerHTML = `
+                    <div class="text-center py-20 text-slate-700 italic text-sm">
+                        加载失败，请检查网络连接或配置
+                    </div>
+                `;
+            }
+        }
+
+        function openLinkInNewTab(url) {
+            window.open(url, '_blank');
+        }
+
+        function showAddNavLinkModal() {
+            document.getElementById('addNavLinkModal').classList.remove('hidden');
+            document.getElementById('navLinkTitle').value = '';
+            document.getElementById('navLinkUrl').value = '';
+            document.getElementById('navLinkCategory').value = '日常效率';
+            document.getElementById('navLinkIcon').value = 'fas fa-globe';
+            document.getElementById('navLinkIconColor').value = 'icon-blue';
+            document.getElementById('navLinkDescription').value = '';
+        }
+
+        function closeAddNavLinkModal() {
+            document.getElementById('addNavLinkModal').classList.add('hidden');
+        }
+
+        function setNavCategory(category) {
+            document.getElementById('navLinkCategory').value = category;
+        }
+
+        function setNavIcon(icon, color) {
+            document.getElementById('navLinkIcon').value = icon;
+            document.getElementById('navLinkIconColor').value = color;
+        }
+
+        async function saveNavLink() {
+            const title = document.getElementById('navLinkTitle').value.trim();
+            const url = document.getElementById('navLinkUrl').value.trim();
+            const category = document.getElementById('navLinkCategory').value.trim() || '未分类';
+            const icon = document.getElementById('navLinkIcon').value;
+            const icon_color = document.getElementById('navLinkIconColor').value;
+            const description = document.getElementById('navLinkDescription').value.trim();
+
+            if (!title || !url) {
+                alert("请填写链接标题和地址");
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert("链接地址格式不正确，请以 http:// 或 https:// 开头");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/nav/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': ADMIN_KEY
+                    },
+                    body: JSON.stringify({
+                        title,
+                        url,
+                        category,
+                        icon,
+                        icon_color,
+                        description
+                    })
+                });
+
+                if (response.ok) {
+                    alert("✅ 导航链接已保存");
+                    closeAddNavLinkModal();
+                    loadNavLinks();
+                } else {
+                    alert("❌ 保存失败");
+                }
+            } catch (error) {
+                console.error('保存导航链接失败:', error);
+                alert("❌ 网络连接失败");
+            }
+        }
+
+        async function editNavLink(id) {
+            const link = navLinksCache[id];
+            if (!link) {
+                alert("链接不存在");
+                return;
+            }
+
+            currentEditNavLinkId = id;
+            document.getElementById('editNavLinkId').textContent = `#${id}`;
+            document.getElementById('editNavLinkTitle').value = link.title;
+            document.getElementById('editNavLinkUrl').value = link.url;
+            document.getElementById('editNavLinkCategory').value = link.category || '未分类';
+            document.getElementById('editNavLinkIcon').value = link.icon || 'fas fa-globe';
+            document.getElementById('editNavLinkIconColor').value = link.icon_color || 'icon-blue';
+            document.getElementById('editNavLinkDescription').value = link.description || '';
+
+            const iconPreview = document.getElementById('editNavIconPreview');
+            iconPreview.innerHTML = `<i class="${link.icon || 'fas fa-globe'} ${link.icon_color || 'icon-blue'} text-2xl"></i>`;
+
+            document.getElementById('editNavLinkModal').classList.remove('hidden');
+        }
+
+        function setEditNavCategory(category) {
+            document.getElementById('editNavLinkCategory').value = category;
+        }
+
+        function setEditNavIcon(icon, color) {
+            document.getElementById('editNavLinkIcon').value = icon;
+            document.getElementById('editNavLinkIconColor').value = color;
+            const iconPreview = document.getElementById('editNavIconPreview');
+            iconPreview.innerHTML = `<i class="${icon} ${color} text-2xl"></i>`;
+        }
+
+        function closeEditNavLinkModal() {
+            document.getElementById('editNavLinkModal').classList.add('hidden');
+            currentEditNavLinkId = null;
+        }
+
+        async function updateNavLink() {
+            const title = document.getElementById('editNavLinkTitle').value.trim();
+            const url = document.getElementById('editNavLinkUrl').value.trim();
+            const category = document.getElementById('editNavLinkCategory').value.trim() || '未分类';
+            const icon = document.getElementById('editNavLinkIcon').value;
+            const icon_color = document.getElementById('editNavLinkIconColor').value;
+            const description = document.getElementById('editNavLinkDescription').value.trim();
+
+            if (!title || !url) {
+                alert("请填写链接标题和地址");
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert("链接地址格式不正确，请以 http:// 或 https:// 开头");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/nav/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': ADMIN_KEY
+                    },
+                    body: JSON.stringify({
+                        id: currentEditNavLinkId,
+                        title,
+                        url,
+                        category,
+                        icon,
+                        icon_color,
+                        description
+                    })
+                });
+
+                if (response.ok) {
+                    alert("✅ 导航链接已更新");
+                    closeEditNavLinkModal();
+                    loadNavLinks();
+                } else {
+                    alert("❌ 更新失败");
+                }
+            } catch (error) {
+                console.error('更新导航链接失败:', error);
+                alert("❌ 网络连接失败");
+            }
+        }
+
+        function confirmDeleteNavLink() {
+            if (confirm("确定要删除这个导航链接吗？此操作不可撤销。")) {
+                deleteNavLink(currentEditNavLinkId);
+            }
+        }
+
+        async function deleteNavLink(id) {
+            try {
+                const response = await fetch(`${API_URL}/api/nav/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': ADMIN_KEY
+                    },
+                    body: JSON.stringify({
+                        id
+                    })
+                });
+
+                if (response.ok) {
+                    alert("✅ 导航链接已删除");
+                    closeEditNavLinkModal();
+                    loadNavLinks();
+                } else {
+                    alert("❌ 删除失败");
+                }
+            } catch (error) {
+                console.error('删除导航链接失败:', error);
+                alert("❌ 网络连接失败");
+            }
+        }
+
+        async function exportNavLinks() {
+            try {
+                const response = await fetch(`${API_URL}/api/nav/list`, {
+                    headers: {
+                        'Authorization': ADMIN_KEY
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('获取导航链接失败');
+                }
+
+                const navLinks = await response.json();
+
+                const exportData = {
+                    export_date: new Date().toISOString(),
+                    total_links: navLinks.length,
+                    categories: {},
+                    links: navLinks
+                };
+
+                navLinks.forEach(link => {
+                    const category = link.category || '未分类';
+                    if (!exportData.categories[category]) {
+                        exportData.categories[category] = [];
+                    }
+                    exportData.categories[category].push(link.title);
+                });
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `CloudNotes_Nav_Export_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+            } catch (error) {
+                console.error('导出导航链接失败:', error);
+                alert("❌ 导出失败");
+            }
+        }
+
+        // ==================== 笔记功能 ====================
+        function showAddNoteModal() {
+            document.getElementById('addNoteModal').classList.remove('hidden');
+            document.getElementById('quickMainPw').value = '';
+            document.getElementById('quickNoteInput').value = '';
+            document.getElementById('quickNoteCharCount').textContent = '0';
+
+            const quickNoteInput = document.getElementById('quickNoteInput');
+            const quickNoteCharCount = document.getElementById('quickNoteCharCount');
+            quickNoteInput.addEventListener('input', function() {
+                quickNoteCharCount.textContent = this.value.length;
+            });
+        }
+
+        function closeAddNoteModal() {
+            document.getElementById('addNoteModal').classList.add('hidden');
+        }
+
+        async function quickSaveNote() {
+            const text = document.getElementById('quickNoteInput').value;
+            const pw = document.getElementById('quickMainPw').value;
+
+            if (!text || !pw) {
+                alert("请填写内容和密码");
+                return;
+            }
+
+            try {
+                const cipher = await encrypt(text, pw);
+
+                const res = await fetch(`${API_URL}/api/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': ADMIN_KEY
+                    },
+                    body: JSON.stringify({
+                        content: cipher
+                    })
+                });
+
+                if (res.ok) {
+                    alert("✅ 笔记已存入安全库");
+                    closeAddNoteModal();
+                    if (currentView === 'notes') {
+                        loadNotesList();
+                    }
+                } else {
+                    alert("❌ 保存失败");
+                }
+            } catch (e) {
+                alert("❌ 网络连接失败");
+            }
+        }
+
+        // ==================== 核心改进部分 ====================
+
+        // Base64 编码辅助函数（支持中文）
+        function base64Encode(str) {
+            try {
+                return btoa(unescape(encodeURIComponent(str)));
+            } catch (e) {
+                console.error('Base64编码失败:', e);
+                return '';
+            }
+        }
+
+        // Base64 解码辅助函数
+        function base64Decode(str) {
+            try {
+                return decodeURIComponent(escape(atob(str)));
+            } catch (e) {
+                console.error('Base64解码失败:', e);
+                return '';
+            }
+        }
+
+        // 从 data 属性导出的函数
+        function exportFromData(button) {
+            const id = button.getAttribute('data-note-id');
+            const base64Content = button.getAttribute('data-note-content-base64');
+
+            if (!base64Content) {
+                // 回退到从缓存获取
+                const note = notesCache[id];
+                if (note && note.clearText) {
+                    doExport(note.clearText, parseInt(id));
+                } else {
+                    alert('无法获取笔记内容');
+                }
+                return;
+            }
+
+            try {
+                const text = base64Decode(base64Content);
+                if (text) {
+                    doExport(text, parseInt(id));
+                } else {
+                    throw new Error('解码失败');
+                }
+            } catch (e) {
+                console.error('导出失败:', e);
+                alert('导出失败，请重试');
+            }
+        }
+
+        // 从 data 属性编辑的函数
+        function editFromData(button) {
+            const id = button.getAttribute('data-note-id');
+            const base64Content = button.getAttribute('data-note-content-base64');
+
+            if (!base64Content) {
+                // 回退到从缓存获取
+                const note = notesCache[id];
+                if (note && note.clearText) {
+                    openEdit(parseInt(id), note.clearText);
+                } else {
+                    alert('无法获取笔记内容');
+                }
+                return;
+            }
+
+            try {
+                const text = base64Decode(base64Content);
+                if (text) {
+                    openEdit(parseInt(id), text);
+                } else {
+                    throw new Error('解码失败');
+                }
+            } catch (e) {
+                console.error('编辑失败:', e);
+                alert('编辑失败，请重试');
+            }
+        }
+
+        // 修改后的加载笔记列表函数 - 包含顶部和底部的展开/收起按钮
+        async function loadNotesList() {
+            const pw = document.getElementById('mainPw').value;
+            if (!pw) return alert("请输入密码解密");
+
+            const listDiv = document.getElementById('notesList');
+            listDiv.innerHTML = '<div class="text-center py-12 text-slate-600 italic text-sm">加载中...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/list`, {
+                    headers: {
+                        'Authorization': ADMIN_KEY
+                    }
+                });
+                const notes = await res.json();
+                listDiv.innerHTML = "";
+
+                if (notes.length === 0) {
+                    listDiv.innerHTML = '<div class="text-center py-20 text-slate-700 italic text-sm">暂无数据</div>';
+                    return;
+                }
+
+                notesCache = {};
+
+                for (let n of notes) {
+                    const clearText = await decrypt(n.content, pw);
+                    if (!clearText) {
+                        continue;
+                    }
+
+                    notesCache[n.id] = {
+                        id: n.id,
+                        clearText: clearText,
+                        created_at: n.created_at
+                    };
+
+                    const isMarkdown = clearText.includes('# ') || clearText.includes('## ') || clearText.includes('```') ||
+                        clearText.includes('**') || clearText.includes('- ') || clearText.includes('> ');
+
+                    const card = document.createElement('div');
+                    card.className = "note-card glass p-6 rounded-3xl space-y-4 border border-white/5 shadow-lg group";
+
+                    let previewContent = clearText;
+                    let showFullButton = false;
+
+                    if (clearText.length > 300) {
+                        previewContent = clearText.substring(0, 300) + '...';
+                        showFullButton = true;
+                    }
+
+                    const renderedContent = isMarkdown ? marked.parse(previewContent) :
+                        `<div class="whitespace-pre-wrap">${previewContent.replace(/\n/g, '<br>')}</div>`;
+
+                    // 使用 Base64 编码内容存储在 data 属性中
+                    const base64Content = base64Encode(clearText);
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase italic">
+                                索引编号 #${n.id}
+                            </span>
+                            
+                            <div class="flex items-center gap-4">
+                                ${showFullButton ? `
+                                <button onclick="toggleNoteContent(${n.id})" 
+                                        class="toggle-btn flex items-center gap-1 px-2 py-1 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 rounded-lg transition"
+                                        id="topToggle-${n.id}">
+                                    <i class="fas fa-chevron-down text-[10px]"></i>
+                                    <span>显示全部内容</span>
+                                </button>
+                                ` : ''}
+                                
+                                <span class="text-[9px] font-black text-slate-500 tracking-widest uppercase italic">
+                                    ${new Date(n.created_at).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="markdown-preview text-slate-300 text-sm leading-relaxed" id="noteContent-${n.id}">
+                            ${renderedContent}
+                            ${showFullButton ? `
+                            <div class="text-center mt-4">
+                                <button onclick="toggleNoteContent(${n.id})" 
+                                        class="toggle-btn flex items-center justify-center gap-1 mx-auto px-4 py-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 rounded-lg transition"
+                                        id="bottomToggle-${n.id}">
+                                    <i class="fas fa-chevron-down text-[10px]"></i>
+                                    <span>显示全部内容</span>
+                                </button>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="pt-4 border-t border-white/5 flex flex-wrap gap-4 items-center">
+                            <button onclick="doShareCopy(event, '${n.content.replace(/'/g, "\\'")}')" class="share-btn text-xs font-black text-blue-400 uppercase tracking-widest hover:text-blue-300 transition flex items-center gap-1">
+                                <i class="fas fa-share"></i>
+                                <span>生成分享</span>
+                            </button>
+                            <button data-note-id="${n.id}" data-note-content-base64="${base64Content}" onclick="exportFromData(this)" class="text-xs font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition flex items-center gap-1">
+                                <i class="fas fa-download"></i>
+                                <span>导出备份</span>
+                            </button>
+                            <button data-note-id="${n.id}" data-note-content-base64="${base64Content}" onclick="editFromData(this)" class="text-xs font-black text-amber-500 uppercase tracking-widest hover:text-amber-400 transition flex items-center gap-1">
+                                <i class="fas fa-edit"></i>
+                                <span>编辑</span>
+                            </button>
+                            <button data-note-id="${n.id}" data-note-content-base64="${base64Content}" onclick="viewNoteAsMindmap(this)" class="text-xs font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition flex items-center gap-1">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>思维导图</span>
+                            </button>
+                            <button onclick="doDelete(${n.id})" class="text-xs font-black text-rose-500 uppercase tracking-widest ml-auto opacity-40 group-hover:opacity-100 transition flex items-center gap-1">
+                                <i class="fas fa-trash"></i>
+                                <span>删除</span>
+                            </button>
+                        </div>
+                    `;
+                    listDiv.appendChild(card);
+                }
+
+                // 高亮代码块
+                setTimeout(() => {
+                    hljs.highlightAll();
+                }, 100);
+            } catch (e) {
+                console.error('加载列表失败:', e);
+                listDiv.innerHTML = '<div class="text-center py-20 text-slate-700 italic text-sm">拉取失败，请检查网络连接</div>';
+            }
+        }
+
+        // ==================== 通用功能 ====================
+        function configUrl() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            document.getElementById('setApi').value = API_URL;
+            document.getElementById('setKey').value = ADMIN_KEY;
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        // ========== 修改点：自动补全 Worker 服务地址协议 ==========
+        function saveSettings() {
+            let apiUrl = document.getElementById('setApi').value.trim();
+
+            // 智能补全协议：若不以 http:// 或 https:// 开头，则默认添加 https://
+            if (!/^https?:\/\//i.test(apiUrl)) {
+                apiUrl = 'https://' + apiUrl;
+            }
+
+            // 移除尾部斜杠后统一添加
+            apiUrl = apiUrl.replace(/\/+$/, '');
+
+            localStorage.setItem('cf_notes_api', apiUrl);
+            localStorage.setItem('cf_notes_key', document.getElementById('setKey').value);
+
+            location.reload();
+        }
+
+        function showMarkdownHelp() {
+            const helpContent = `# Markdown 语法速查
+
+## 标题
+\`# 一级标题\`
+\`## 二级标题\`
+\`### 三级标题\`
+
+## 文本样式
+- **粗体**: \`**粗体文本**\`
+- *斜体*: \`*斜体文本*\`
+- ~~删除线~~: \`~~删除文本~~\`
+- \`行内代码\`: \`\` 代码 \`\`
+
+## 列表
+- 无序列表: \`- 项目\`
+- 有序列表: \`1. 项目\`
+
+## 链接与图片
+- [链接](https://example.com): \`[链接文本](URL)\`
+- ![图片](https://example.com/image.jpg): \`![替代文本](图片URL)\`
+
+## 代码块
+\`\`\`javascript
+// JavaScript 代码
+console.log('Hello');
+\`\`\`
+
+## 引用
+> 引用内容: \`> 引用文本\`
+
+## 表格
+| 表头 | 表头 |
+|------|------|
+| 内容 | 内容 |
+
+## 分割线
+\`---\` 或 \`***\`
+
+## 任务列表
+- [ ] 未完成任务
+- [x] 已完成任务`;
+
+            alert(helpContent);
+        }
+
+        // ==================== 编辑模式功能 ====================
+        function switchTab(tabName) {
+            const editTab = document.getElementById('editTab');
+            const previewTab = document.getElementById('previewTab');
+            const editTabBtn = document.getElementById('editTabBtn');
+            const previewTabBtn = document.getElementById('previewTabBtn');
+            const editContent = document.getElementById('editNoteContent');
+
+            if (tabName === 'edit') {
+                editTab.classList.remove('hidden');
+                previewTab.classList.add('hidden');
+                editTabBtn.classList.add('active');
+                previewTabBtn.classList.remove('active');
+                // 思维导图在 DOM 中保持，切 tab 不重绘
+            } else {
+                editTab.classList.add('hidden');
+                previewTab.classList.remove('hidden');
+                editTabBtn.classList.remove('active');
+                previewTabBtn.classList.add('active');
+
+                const previewDiv = document.getElementById('markdownPreview');
+                const markdownContent = editContent.value || '';
+
+                // 使用与分享页面完全相同的渲染方式
+                previewDiv.innerHTML = marked.parse(markdownContent);
+
+                // 高亮代码块 - 使用与分享页面相同的设置
+                setTimeout(() => {
+                    hljs.highlightAll();
+
+                    // 确保所有代码块都有正确的背景
+                    previewDiv.querySelectorAll('pre code').forEach((block) => {
+                        if (!block.classList.contains('hljs')) {
+                            hljs.highlightElement(block);
+                        }
+                    });
+                }, 100);
+            }
+        }
+
+        function insertMarkdown(syntax, placeholder) {
+            const textarea = document.getElementById('editNoteContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+
+            if (selectedText) {
+                // 处理不同的语法
+                let newText;
+                if (syntax === '**') {
+                    newText = `**${selectedText}**`;
+                } else if (syntax === '*') {
+                    newText = `*${selectedText}*`;
+                } else if (syntax === '~~') {
+                    newText = `~~${selectedText}~~`;
+                } else if (syntax === '[链接文本](https://)') {
+                    newText = `[${selectedText}](https://)`;
+                } else if (syntax === '![替代文本](https://)') {
+                    newText = `![${selectedText}](https://)`;
+                } else {
+                    newText = syntax + selectedText;
+                }
+
+                textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+
+                // 设置光标位置
+                if (syntax === '**' || syntax === '*' || syntax === '~~') {
+                    textarea.selectionStart = start + syntax.length;
+                    textarea.selectionEnd = end + syntax.length;
+                } else if (syntax === '[链接文本](https://)') {
+                    textarea.selectionStart = start + 1;
+                    textarea.selectionEnd = end + 1;
+                } else if (syntax === '![替代文本](https://)') {
+                    textarea.selectionStart = start + 2;
+                    textarea.selectionEnd = end + 2;
+                } else {
+                    textarea.selectionStart = start + syntax.length;
+                    textarea.selectionEnd = start + syntax.length + placeholder.length;
+                }
+            } else {
+                let placeholderText;
+                if (syntax === '```javascript\n\n```') {
+                    placeholderText = '```javascript\n' + placeholder + '\n```';
+                } else if (syntax === '**') {
+                    placeholderText = `**${placeholder}**`;
+                } else if (syntax === '*') {
+                    placeholderText = `*${placeholder}*`;
+                } else if (syntax === '~~') {
+                    placeholderText = `~~${placeholder}~~`;
+                } else if (syntax === '[链接文本](https://)') {
+                    placeholderText = `[链接文本](https://)`;
+                } else if (syntax === '![替代文本](https://)') {
+                    placeholderText = `![替代文本](https://)`;
+                } else {
+                    placeholderText = syntax + placeholder;
+                }
+
+                textarea.value = textarea.value.substring(0, start) + placeholderText + textarea.value.substring(end);
+
+                // 设置光标位置
+                if (syntax === '```javascript\n\n```') {
+                    textarea.selectionStart = start + '```javascript\n'.length;
+                    textarea.selectionEnd = start + '```javascript\n'.length + placeholder.length;
+                } else if (syntax === '**') {
+                    textarea.selectionStart = start + 2;
+                    textarea.selectionEnd = start + 2 + placeholder.length;
+                } else if (syntax === '*') {
+                    textarea.selectionStart = start + 1;
+                    textarea.selectionEnd = start + 1 + placeholder.length;
+                } else if (syntax === '~~') {
+                    textarea.selectionStart = start + 2;
+                    textarea.selectionEnd = start + 2 + placeholder.length;
+                } else if (syntax === '[链接文本](https://)') {
+                    textarea.selectionStart = start + 1;
+                    textarea.selectionEnd = start + 5; // "链接文本"的长度
+                } else if (syntax === '![替代文本](https://)') {
+                    textarea.selectionStart = start + 2;
+                    textarea.selectionEnd = start + 6; // "替代文本"的长度
+                } else {
+                    textarea.selectionStart = start + syntax.length;
+                    textarea.selectionEnd = start + syntax.length + placeholder.length;
+                }
+            }
+
+            textarea.focus();
+            updateCharCount();
+            renderEditMindmap(textarea.value);
+        }
+
+        function updateCharCount() {
+            const textarea = document.getElementById('editNoteContent');
+            const charCount = document.getElementById('editCharCount');
+            if (textarea && charCount) {
+                charCount.textContent = textarea.value.length;
+            }
+        }
+
+        async function doSave(content, id = null) {
+            const text = content || document.getElementById('noteInput').value;
+            const pw = document.getElementById('mainPw').value;
+
+            if (!text || !pw) {
+                alert("请填写内容和密码");
+                return null;
+            }
+
+            try {
+                const cipher = await encrypt(text, pw);
+
+                const body = {
+                    content: cipher
+                };
+
+                if (id !== null) {
+                    body.id = id;
+                }
+
+                const res = await fetch(`${API_URL}/api/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': ADMIN_KEY
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (res.ok) {
+                    if (id === null) {
+                        alert("✅ 已存入安全库");
+                        document.getElementById('noteInput').value = "";
+                        document.getElementById('noteCharCount').textContent = "0";
+                    } else {
+                        alert("✅ 笔记已更新");
+                    }
+                    loadNotesList();
+                    return true;
+                } else {
+                    alert("❌ 保存失败");
+                    return false;
+                }
+            } catch (e) {
+                alert("❌ 网络连接失败");
+                return false;
+            }
+        }
+
+        // 修改后的 toggleNoteContent 函数，支持顶部和底部按钮同步
+        function toggleNoteContent(id) {
+            const contentDiv = document.getElementById(`noteContent-${id}`);
+            const topToggleBtn = document.getElementById(`topToggle-${id}`);
+            const bottomToggleBtn = document.getElementById(`bottomToggle-${id}`);
+            const note = notesCache[id];
+
+            if (!note) {
+                console.error('未找到笔记缓存:', id);
+                return;
+            }
+
+            const currentContent = contentDiv.innerHTML;
+            const showFullText = currentContent.includes('显示全部内容');
+
+            const isMarkdown = note.clearText.includes('# ') || note.clearText.includes('## ') ||
+                note.clearText.includes('```') || note.clearText.includes('**') ||
+                note.clearText.includes('- ') || note.clearText.includes('> ');
+
+            if (showFullText) {
+                // 显示完整内容 - 使用与编辑模式预览相同的渲染方式
+                const renderedContent = isMarkdown ? marked.parse(note.clearText) :
+                    `<div class="whitespace-pre-wrap">${note.clearText.replace(/\n/g, '<br>')}</div>`;
+                contentDiv.innerHTML = renderedContent +
+                    `<div class="text-center mt-4">
+                        <button onclick="toggleNoteContent(${id})" 
+                                class="toggle-btn expanded flex items-center justify-center gap-1 mx-auto px-4 py-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 rounded-lg transition"
+                                id="bottomToggle-${id}">
+                            <i class="fas fa-chevron-up text-[10px]"></i>
+                            <span>收起</span>
+                        </button>
+                    </div>`;
+
+                // 更新顶部按钮
+                if (topToggleBtn) {
+                    topToggleBtn.classList.add('expanded');
+                    topToggleBtn.innerHTML = `
+                        <i class="fas fa-chevron-up text-[10px]"></i>
+                        <span>收起</span>
+                    `;
+                }
+
+                // 高亮代码块 - 使用与编辑模式预览相同的设置
+                setTimeout(() => {
+                    hljs.highlightAll();
+                }, 100);
+            } else {
+                // 显示预览内容
+                let previewContent = note.clearText;
+                if (note.clearText.length > 300) {
+                    previewContent = note.clearText.substring(0, 300) + '...';
+                }
+
+                const renderedContent = isMarkdown ? marked.parse(previewContent) :
+                    `<div class="whitespace-pre-wrap">${previewContent.replace(/\n/g, '<br>')}</div>`;
+                contentDiv.innerHTML = renderedContent +
+                    `<div class="text-center mt-4">
+                        <button onclick="toggleNoteContent(${id})" 
+                                class="toggle-btn flex items-center justify-center gap-1 mx-auto px-4 py-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 rounded-lg transition"
+                                id="bottomToggle-${id}">
+                            <i class="fas fa-chevron-down text-[10px]"></i>
+                            <span>显示全部内容</span>
+                        </button>
+                    </div>`;
+
+                // 更新顶部按钮
+                if (topToggleBtn) {
+                    topToggleBtn.classList.remove('expanded');
+                    topToggleBtn.innerHTML = `
+                        <i class="fas fa-chevron-down text-[10px]"></i>
+                        <span>显示全部内容</span>
+                    `;
+                }
+            }
+        }
+
+        // ==================== 编辑功能 ====================
+        function openEdit(id, content) {
+            currentEditId = id;
+            document.getElementById('editNoteId').textContent = `#${id}`;
+
+            const textarea = document.getElementById('editNoteContent');
+            textarea.value = content;
+
+            // 初始化字符计数
+            updateCharCount();
+
+            // 添加输入监听
+            textarea.addEventListener('input', updateCharCount);
+
+            // 默认显示编辑模式
+            switchTab('edit');
+
+            // 先显示模态框，使 SVG 有正确尺寸
+            document.getElementById('editModal').classList.remove('hidden');
+
+            // 初始化实时思维导图
+            setupEditMindmap();
+
+            // 聚焦到文本区域
+            setTimeout(() => {
+                textarea.focus();
+            }, 100);
+        }
+
+        function closeEdit() {
+            document.getElementById('editModal').classList.add('hidden');
+            currentEditId = null;
+            if (editMindmapInstance) {
+                editMindmapInstance.destroy();
+                editMindmapInstance = null;
+                const svgEl = document.getElementById('editMindmapSvg');
+                if (svgEl) while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+            }
+        }
+
+        async function saveEdit() {
+            const newContent = document.getElementById('editNoteContent').value;
+
+            if (!newContent.trim()) {
+                alert("笔记内容不能为空");
+                return;
+            }
+
+            const success = await doSave(newContent, currentEditId);
+
+            if (success) {
+                closeEdit();
+            }
+        }
+
+        // ==================== 分享功能（自动复制） ====================
+        async function doShareCopy(event, cipher) {
+            const pid = Math.random().toString(36).substring(2, 12);
+
+            // 显示加载状态
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+            button.disabled = true;
+
+            try {
+                await fetch(`${API_URL}/api/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': ADMIN_KEY
+                    },
+                    body: JSON.stringify({
+                        content: cipher,
+                        public_id: pid,
+                        is_share: 1
+                    })
+                });
+
+                const fullUrl = `${window.location.origin}${window.location.pathname}?share=${pid}&cfg=${btoa(API_URL)}`;
+
+                // 使用现代 Clipboard API 复制到剪贴板
+                try {
+                    await navigator.clipboard.writeText(fullUrl);
+
+                    // 显示复制成功的视觉反馈
+                    button.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    button.style.color = 'white';
+
+                    // 3秒后恢复原状
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        button.style.background = '';
+                        button.style.color = '';
+                    }, 3000);
+
+                    // 显示 Toast 通知
+                    showToast('链接已复制到剪贴板！', 'success');
+
+                } catch (clipboardError) {
+                    console.error('Clipboard API 失败:', clipboardError);
+
+                    // 降级方案：使用 document.execCommand
+                    const textarea = document.createElement('textarea');
+                    textarea.value = fullUrl;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+
+                    try {
+                        const success = document.execCommand('copy');
+                        if (success) {
+                            // 显示复制成功的视觉反馈
+                            button.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                            button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                            button.style.color = 'white';
+
+                            setTimeout(() => {
+                                button.innerHTML = originalText;
+                                button.disabled = false;
+                                button.style.background = '';
+                                button.style.color = '';
+                            }, 3000);
+
+                            showToast('链接已复制到剪贴板！', 'success');
+                        } else {
+                            // 如果 execCommand 也失败，回退到 prompt
+                            prompt("✅ 阅后即焚加密链接已生成（请手动复制）：", fullUrl);
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                        }
+                    } catch (execError) {
+                        console.error('execCommand 失败:', execError);
+                        prompt("✅ 阅后即焚加密链接已生成（请手动复制）：", fullUrl);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    } finally {
+                        document.body.removeChild(textarea);
+                    }
+                }
+            } catch (e) {
+                console.error('生成分享链接失败:', e);
+
+                // 显示错误反馈
+                button.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 失败';
+                button.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                button.style.color = 'white';
+
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    button.style.background = '';
+                    button.style.color = '';
+                }, 3000);
+
+                showToast('分享失败，请重试', 'error');
+            }
+        }
+
+        // ==================== Toast 通知函数 ====================
+        function showToast(message, type = 'info') {
+            // 移除现有的 toast
+            const existingToast = document.getElementById('customToast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // 创建新的 toast
+            const toast = document.createElement('div');
+            toast.id = 'customToast';
+            toast.className = 'toast ' + type;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+
+            document.getElementById('toastContainer').appendChild(toast);
+
+            // 显示动画
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            // 3秒后自动消失
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+
+            // 点击关闭
+            toast.addEventListener('click', () => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            });
+        }
+
+        function doExport(text, id) {
+            const date = new Date().toISOString().split('T')[0];
+            const blob = new Blob([text], {
+                type: 'text/plain;charset=utf-8'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CloudNote_${id}_${date}.md`;
+            a.click();
+        }
+
+        async function doDelete(id) {
+            if (!confirm("确定要物理抹除这条记录吗？")) return;
+            await fetch(`${API_URL}/api/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': ADMIN_KEY
+                },
+                body: JSON.stringify({
+                    id: id
+                })
+            });
+            loadNotesList();
+        }
+
+        async function doAI() {
+            const text = document.getElementById('noteInput').value;
+            if (!text) return alert("笔记为空");
+            const btn = event.target;
+            btn.innerText = "思考中...";
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${API_URL}/api/ai-sum`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': ADMIN_KEY
+                    },
+                    body: JSON.stringify({
+                        text: text.substring(0, 1000)
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('noteInput').value += `\n\n--- ✨ AI 总结 ---\n\n${data.summary}`;
+                document.getElementById('noteCharCount').textContent = document.getElementById('noteInput').value.length;
+            } finally {
+                btn.innerText = "✨ AI 智能总结";
+                btn.disabled = false;
+            }
+        }
+
+        // ==================== 阅后即焚功能 ====================
+        async function doUnlockShare() {
+            const pw = document.getElementById('sharePw').value;
+            const resDiv = document.getElementById('shareResult');
+            const unlockBtn = document.getElementById('unlockBtn');
+            const burnTimerDiv = document.getElementById('burnTimer');
+            const charsBurnedSpan = document.getElementById('charsBurned');
+            const totalCharsSpan = document.getElementById('totalChars');
+            const burnPercentageSpan = document.getElementById('burnPercentage');
+            const burnProgressBar = document.getElementById('burnProgressBar');
+            const burnNowBtn = document.getElementById('burnNowBtn');
+            const burnSpeedSpan = document.getElementById('burnSpeed');
+
+            if (!pw) {
+                alert("请输入解密密码");
+                return;
+            }
+
+            try {
+                unlockBtn.innerText = "解密中...";
+                unlockBtn.disabled = true;
+
+                const res = await fetch(`${API_URL}/api/share/${shareId}`);
+                if (!res.ok) {
+                    alert("链接已失效或内容已被焚毁");
+                    return;
+                }
+
+                const data = await res.json();
+                const clearText = await decrypt(data.content, pw);
+
+                if (clearText) {
+                    // 存储原始内容
+                    originalContent = clearText;
+
+                    // 渲染Markdown内容 - 使用与编辑模式预览相同的渲染方式
+                    const burningContentDiv = document.getElementById('burningContent');
+                    burningContentDiv.innerHTML = marked.parse(clearText);
+
+                    // ===== 新增：为所有Markdown渲染的链接添加新窗口打开 =====
+                    burningContentDiv.querySelectorAll('a').forEach(a => {
+                        if (!a.hasAttribute('target')) {
+                            a.setAttribute('target', '_blank');
+                            a.setAttribute('rel', 'noopener noreferrer');
+                        }
+                    });
+
+                    // 高亮代码块 - 使用与编辑模式预览相同的设置
+                    hljs.highlightAll();
+
+                    // 显示结果容器
+                    resDiv.classList.remove('hidden');
+
+                    // 更新按钮状态
+                    unlockBtn.innerText = "数据已解密";
+                    unlockBtn.classList.remove('share-gradient');
+                    unlockBtn.classList.add('bg-gray-600', 'cursor-not-allowed');
+
+                    // ===== 启动防截图/录屏防护（仅保留窗口模糊、快捷键拦截，无水印）=====
+                    applyAntiScreenshotProtection();
+
+                    // 准备焚毁动画（顺序焚毁）
+                    prepareSequentialBurnAnimation();
+
+                    // 更新字符统计
+                    totalChars = burningChars.length;
+                    charsBurnedSpan.textContent = "0";
+                    totalCharsSpan.textContent = totalChars;
+                    burnPercentageSpan.textContent = "0%";
+                    burnProgressBar.style.width = "0%";
+                    burnSpeedSpan.textContent = "速度: 中";
+
+                    // 重置焚毁状态
+                    isBurningActive = false;
+                    burnTimeLeft = 10;
+                    currentCharIndex = 0;
+
+                    // 启动倒计时
+                    burnTimerDiv.classList.remove('hidden');
+                    startBurnCountdown();
+
+                    // 重新启用焚毁按钮
+                    burnNowBtn.disabled = false;
+                    burnNowBtn.innerHTML = `<i class="fas fa-fire"></i><span>立即焚毁</span>`;
+
+                } else {
+                    alert("密码错误");
+                    unlockBtn.innerText = "解密并销毁";
+                    unlockBtn.disabled = false;
+                }
+            } catch (e) {
+                console.error("解密失败:", e);
+                alert("网络异常或解密失败");
+                unlockBtn.innerText = "解密并销毁";
+                unlockBtn.disabled = false;
+            }
+        }
+
+        // 准备顺序焚毁动画
+        function prepareSequentialBurnAnimation() {
+            const contentDiv = document.getElementById('burningContent');
+            const textNodes = [];
+
+            // 清空之前的焚毁字符
+            burningChars = [];
+
+            // 获取所有文本节点
+            function getTextNodes(node) {
+                if (node.nodeType === 3) { // 文本节点
+                    if (node.textContent.trim()) {
+                        textNodes.push(node);
+                    }
+                } else {
+                    for (let child of node.childNodes) {
+                        getTextNodes(child);
+                    }
+                }
+            }
+
+            getTextNodes(contentDiv);
+
+            // 将文本节点拆分为字符并包装
+            textNodes.forEach(node => {
+                const text = node.textContent;
+                const parent = node.parentNode;
+
+                if (parent && text.trim()) {
+                    const chars = text.split('');
+                    const charSpans = chars.map((char, index) => {
+                        const span = document.createElement('span');
+                        span.className = 'burning-char';
+                        span.textContent = char;
+                        span.dataset.charIndex = burningChars.length + index; // 设置字符索引
+                        return span;
+                    });
+
+                    const wrapper = document.createElement('span');
+                    wrapper.className = 'burning-text';
+                    charSpans.forEach(span => wrapper.appendChild(span));
+
+                    parent.replaceChild(wrapper, node);
+
+                    // 按顺序添加到焚毁列表
+                    charSpans.forEach(span => burningChars.push(span));
+                }
+            });
+
+            console.log(`准备焚毁 ${burningChars.length} 个字符（顺序焚毁）`);
+        }
+
+        // 开始焚毁倒计时
+        function startBurnCountdown() {
+            if (burnCountdownInterval) {
+                clearInterval(burnCountdownInterval);
+            }
+
+            burnTimeLeft = 10;
+            const timeLeftSpan = document.getElementById('timeLeft');
+            const burnTimerDiv = document.getElementById('burnTimer');
+
+            burnCountdownInterval = setInterval(() => {
+                burnTimeLeft--;
+                timeLeftSpan.textContent = burnTimeLeft;
+
+                if (burnTimeLeft <= 0) {
+                    clearInterval(burnCountdownInterval);
+                    burnTimerDiv.classList.add('hidden');
+                    startSequentialBurnAnimation();
+                }
+            }, 1000);
+        }
+
+        // 开始顺序焚毁动画
+        function startSequentialBurnAnimation() {
+            if (isBurningActive || burningChars.length === 0) return;
+
+            isBurningActive = true;
+            const burnNowBtn = document.getElementById('burnNowBtn');
+            burnNowBtn.disabled = true;
+            burnNowBtn.innerHTML = `<i class="fas fa-fire animate-spin"></i><span>焚毁中...</span>`;
+
+            const burnTimerDiv = document.getElementById('burnTimer');
+            burnTimerDiv.classList.add('hidden');
+
+            const charsBurnedSpan = document.getElementById('charsBurned');
+            const totalCharsSpan = document.getElementById('totalChars');
+            const burnPercentageSpan = document.getElementById('burnPercentage');
+            const burnProgressBar = document.getElementById('burnProgressBar');
+            const burnSpeedSpan = document.getElementById('burnSpeed');
+
+            totalChars = burningChars.length;
+            let burnedChars = 0;
+            currentCharIndex = 0;
+
+            // 根据内容长度调整焚毁速度
+            let burnDelay;
+            if (totalChars < 100) {
+                burnDelay = 150; // 短内容，较慢速度
+                burnSpeedSpan.textContent = "速度: 慢";
+            } else if (totalChars < 500) {
+                burnDelay = 120; // 中等内容，中等速度
+                burnSpeedSpan.textContent = "速度: 中";
+            } else {
+                burnDelay = 100; // 长内容，较快速度
+                burnSpeedSpan.textContent = "速度: 快";
+            }
+
+            // 创建焚毁通知
+            showBurnNotification();
+
+            // 创建焚毁光标
+            createBurnCursor();
+
+            // 开始顺序焚毁
+            burningInterval = setInterval(() => {
+                if (currentCharIndex >= burningChars.length) {
+                    // 所有字符已焚毁
+                    clearInterval(burningInterval);
+                    completeBurnAnimation();
+                    return;
+                }
+
+                // 焚毁当前字符
+                const charSpan = burningChars[currentCharIndex];
+                if (charSpan) {
+                    // 创建火焰轨迹效果
+                    createFireTrail(charSpan);
+
+                    // 高亮当前正在焚毁的字符
+                    charSpan.classList.add('current-burning');
+
+                    // 稍后开始焚毁动画
+                    setTimeout(() => {
+                        charSpan.classList.add('char-burning');
+
+                        // 再稍后完全移除
+                        setTimeout(() => {
+                            charSpan.classList.add('char-removed');
+                            charSpan.classList.remove('current-burning');
+                        }, 300);
+                    }, 100);
+
+                    burnedChars++;
+                    currentCharIndex++;
+
+                    // 更新进度
+                    const progress = Math.round((burnedChars / totalChars) * 100);
+                    const remainingProgress = 100 - progress;
+
+                    charsBurnedSpan.textContent = burnedChars;
+                    burnPercentageSpan.textContent = `${progress}%`;
+                    burnProgressBar.style.width = `${progress}%`;
+
+                    // 更新焚毁通知
+                    updateBurnNotification(progress);
+
+                    // 更新焚毁光标位置
+                    updateBurnCursor();
+                }
+            }, burnDelay);
+        }
+
+        // 创建火焰轨迹效果
+        function createFireTrail(charSpan) {
+            const rect = charSpan.getBoundingClientRect();
+
+            // 创建多个火焰粒子形成轨迹
+            const particleCount = Math.floor(Math.random() * 2) + 2; // 2-3个粒子
+
+            for (let i = 0; i < particleCount; i++) {
+                const fire = document.createElement('div');
+                fire.className = 'fire-trail';
+
+                // 随机方向偏移
+                const offsetX = (Math.random() - 0.5) * 15;
+                const offsetY = Math.random() * -15 - 5;
+
+                // 设置CSS变量
+                fire.style.setProperty('--tx', `${offsetX}px`);
+                fire.style.setProperty('--ty', `${offsetY}px`);
+
+                fire.style.left = `${rect.left + rect.width / 2}px`;
+                fire.style.top = `${rect.top + rect.height / 2}px`;
+
+                document.body.appendChild(fire);
+
+                // 动画结束后移除
+                setTimeout(() => {
+                    if (fire.parentNode) {
+                        fire.parentNode.removeChild(fire);
+                    }
+                }, 800);
+            }
+        }
+
+        // 创建焚毁光标
+        function createBurnCursor() {
+            // 移除已有的光标
+            if (burnCursor) {
+                burnCursor.remove();
+            }
+
+            burnCursor = document.createElement('div');
+            burnCursor.className = 'burn-cursor';
+            burnCursor.id = 'burnCursor';
+
+            const contentDiv = document.getElementById('burningContent');
+            contentDiv.appendChild(burnCursor);
+
+            // 初始化光标位置
+            updateBurnCursor();
+        }
+
+        // 更新焚毁光标位置
+        function updateBurnCursor() {
+            if (!burnCursor || currentCharIndex >= burningChars.length) {
+                if (burnCursor) {
+                    burnCursor.style.display = 'none';
+                }
+                return;
+            }
+
+            const charSpan = burningChars[currentCharIndex];
+            if (charSpan) {
+                const rect = charSpan.getBoundingClientRect();
+                const contentRect = document.getElementById('burningContent').getBoundingClientRect();
+
+                // 计算相对位置
+                burnCursor.style.left = `${rect.left - contentRect.left}px`;
+                burnCursor.style.top = `${rect.top - contentRect.top}px`;
+                burnCursor.style.height = `${rect.height}px`;
+                burnCursor.style.display = 'block';
+            }
+        }
+
+        // 完成焚毁动画
+        function completeBurnAnimation() {
+            // ===== 焚毁完成，移除防截图防护 =====
+            removeAntiScreenshotProtection();
+
+            // 移除焚毁光标
+            if (burnCursor) {
+                burnCursor.remove();
+                burnCursor = null;
+            }
+
+            // 更新按钮状态
+            const burnNowBtn = document.getElementById('burnNowBtn');
+            burnNowBtn.innerHTML = `<i class="fas fa-check"></i><span>已焚毁</span>`;
+            burnNowBtn.classList.remove('text-orange-500', 'hover:text-red-500');
+            burnNowBtn.classList.add('text-gray-500');
+
+            // 显示完成消息
+            setTimeout(() => {
+                const contentDiv = document.getElementById('burningContent');
+                contentDiv.innerHTML = `
+                    <div class="text-center py-12 space-y-4">
+                        <div class="text-4xl animate-pulse">🔥</div>
+                        <h3 class="text-xl font-bold text-red-500">内容已焚毁</h3>
+                        <p class="text-slate-400 text-sm">所有数据已从服务器永久删除</p>
+                        <div class="text-xs text-slate-500 mt-4">
+                            字符顺序焚毁完成，共焚毁 ${totalChars} 个字符
+                        </div>
+                    </div>
+                `;
+
+                // 隐藏进度条
+                document.querySelector('.pt-4.border-t').style.display = 'none';
+            }, 500);
+
+            // 可选：调用服务器删除接口
+            try {
+                fetch(`${API_URL}/api/share/delete/${shareId}`);
+            } catch (e) {
+                console.error('删除服务器数据失败:', e);
+            }
+
+            // 隐藏焚毁通知
+            hideBurnNotification();
+        }
+
+        // 显示焚毁通知
+        function showBurnNotification() {
+            // 移除已有的通知
+            const existingNotification = document.getElementById('burnNotification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.id = 'burnNotification';
+            notification.className = 'burn-notification';
+            notification.innerHTML = `
+                <div class="text-white font-bold animate-pulse flex items-center gap-2">
+                    <i class="fas fa-fire"></i>
+                    <span>字符顺序焚毁中...</span>
+                </div>
+                <div class="text-xs text-white/80" id="burnNotificationProgress">0%</div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // 自动隐藏时间
+            const autoHideTime = Math.min(15000, totalChars * 50 + 5000);
+            setTimeout(() => {
+                if (notification.parentNode && !isBurningActive) {
+                    notification.remove();
+                }
+            }, autoHideTime);
+        }
+
+        // 更新焚毁通知
+        function updateBurnNotification(progress) {
+            const notification = document.getElementById('burnNotification');
+            if (notification) {
+                const progressSpan = document.getElementById('burnNotificationProgress');
+                if (progressSpan) {
+                    progressSpan.textContent = `${progress}%`;
+                }
+            }
+        }
+
+        // 隐藏焚毁通知
+        function hideBurnNotification() {
+            const notification = document.getElementById('burnNotification');
+            if (notification && notification.parentNode) {
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 1000);
+            }
+        }
+
+        // 手动触发焚毁动画
+        function startBurnAnimation() {
+            if (isBurningActive) return;
+
+            // 立即开始焚毁
+            const burnTimerDiv = document.getElementById('burnTimer');
+            burnTimerDiv.classList.add('hidden');
+
+            if (burnCountdownInterval) {
+                clearInterval(burnCountdownInterval);
+            }
+
+            startSequentialBurnAnimation();
+        }
+
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', () => {
+            if (burningInterval) {
+                clearInterval(burningInterval);
+            }
+            if (burnCountdownInterval) {
+                clearInterval(burnCountdownInterval);
+            }
+        });
+
+        // ==================== 快速访问功能 ====================
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // ==================== 思维导图功能 ====================
+        let currentMindmapPreviewInstance = null;
+        let editMindmapInstance = null;
+
+        function renderMarkmapToSvg(svgEl, content, instanceHolder) {
+            if (instanceHolder && instanceHolder.value) {
+                instanceHolder.value.destroy();
+                instanceHolder.value = null;
+            }
+            while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+            try {
+                const { Transformer } = window.markmap;
+                const { Markmap, loadCSS, loadJS } = window.markmap;
+                if (!Transformer || !Markmap) {
+                    showToast('思维导图库加载失败', 'error');
+                    return null;
+                }
+                const transformer = new Transformer();
+                const { root, features } = transformer.transform(content);
+                const assets = transformer.getUsedAssets(features);
+                if (assets) {
+                    if (assets.styles) loadCSS(assets.styles);
+                    if (assets.scripts) {
+                        loadJS(assets.scripts, { getMarkmap: () => window.markmap });
+                    }
+                }
+                const instance = Markmap.create(svgEl, {
+                    colorFreezeLevel: 2,
+                    duration: 500,
+                    fitRatio: 1,
+                    maxWidth: 300,
+                    style: { background: 'transparent' },
+                }, root);
+                mindmapTree = root;
+                setTimeout(attachMindmapInlineEdit, 100);
+                if (instanceHolder) instanceHolder.value = instance;
+                return instance;
+            } catch (e) {
+                console.error('Mind map render error:', e);
+                showToast('渲染失败，请检查 Markdown 格式', 'error');
+                return null;
+            }
+        }
+
+        let mindmapPreviewSourceId = null;
+        let mindmapTree = null;
+
+        function viewNoteAsMindmap(button) {
+            const id = button.getAttribute('data-note-id');
+            const base64Content = button.getAttribute('data-note-content-base64');
+            let content = null;
+            if (base64Content) {
+                try { content = base64Decode(base64Content); } catch (e) {}
+            }
+            if (!content) {
+                const note = notesCache[id];
+                if (note && note.clearText) content = note.clearText;
+            }
+            if (!content) {
+                showToast('无法获取笔记内容', 'error');
+                return;
+            }
+            mindmapPreviewSourceId = id;
+            document.getElementById('mindmapPreviewId').textContent = id ? `#${id}` : '';
+            document.getElementById('mindmapPreviewModal').classList.remove('hidden');
+            setTimeout(() => renderMindmapPreviewContent(content), 200);
+        }
+
+        function renderMindmapPreviewContent(content) {
+            const svgEl = document.getElementById('mindmapPreviewSvg');
+            const current = currentMindmapPreviewInstance;
+            if (current) {
+                try {
+                    const { Transformer } = window.markmap;
+                    const transformer = new Transformer();
+                    const { root, features } = transformer.transform(content);
+                    mindmapTree = root;
+                    current.setData({ root });
+                    setTimeout(attachMindmapInlineEdit, 100);
+                    return;
+                } catch (e) {
+                    current.destroy();
+                    currentMindmapPreviewInstance = null;
+                }
+            }
+            currentMindmapPreviewInstance = renderMarkmapToSvg(svgEl, content, { value: currentMindmapPreviewInstance });
+        }
+
+        async function renderEditMindmap(content) {
+            const svgEl = document.getElementById('editMindmapSvg');
+            if (!svgEl) return;
+            if (!content || !content.trim()) {
+                if (editMindmapInstance) {
+                    editMindmapInstance.destroy();
+                    editMindmapInstance = null;
+                }
+                while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+                return;
+            }
+            const { Transformer, Markmap, loadCSS, loadJS } = window.markmap;
+            if (!Transformer || !Markmap) return;
+            const transformer = new Transformer();
+            const { root, features } = transformer.transform(content);
+            const assets = transformer.getUsedAssets(features);
+            if (assets) {
+                if (assets.styles) loadCSS(assets.styles);
+                if (assets.scripts) {
+                    loadJS(assets.scripts, { getMarkmap: () => window.markmap });
+                }
+            }
+            if (editMindmapInstance) {
+                try {
+                    await editMindmapInstance.setData(root, { duration: 0 });
+                    await editMindmapInstance.fit();
+                } catch (e) {
+                    console.error('Edit mind map update error:', e);
+                }
+                return;
+            }
+            editMindmapInstance = Markmap.create(svgEl, {
+                colorFreezeLevel: 2,
+                duration: 500,
+                fitRatio: 1,
+                maxWidth: 300,
+                style: { background: 'transparent' },
+            }, root);
+        }
+
+        let editMindmapTimer = null;
+        function onEditContentInput() {
+            if (editMindmapTimer) clearTimeout(editMindmapTimer);
+            editMindmapTimer = setTimeout(() => {
+                renderEditMindmap(document.getElementById('editNoteContent').value);
+            }, 200);
+        }
+        let editMindmapInputSetup = false;
+        function setupEditMindmap() {
+            const textarea = document.getElementById('editNoteContent');
+            if (!editMindmapInputSetup) {
+                textarea.addEventListener('input', onEditContentInput);
+                editMindmapInputSetup = true;
+            }
+            renderEditMindmap(textarea.value);
+        }
+
+        function closeMindmapPreview() {
+            if (currentMindmapPreviewInstance) {
+                currentMindmapPreviewInstance.destroy();
+                currentMindmapPreviewInstance = null;
+            }
+            document.getElementById('mindmapPreviewModal').classList.add('hidden');
+        }
+
+        function fitMindmapPreview() {
+            if (currentMindmapPreviewInstance) currentMindmapPreviewInstance.fit();
+        }
+
+        // ==================== 导图内联编辑 ====================
+        function attachMindmapInlineEdit() {
+            const svg = document.getElementById('mindmapPreviewSvg');
+            if (!svg || !mindmapTree) return;
+            const nodeEls = svg.querySelectorAll('.markmap-node');
+            let idx = 0;
+            function walk(node, path) {
+                if (idx >= nodeEls.length) return;
+                nodeEls[idx].dataset.treePath = JSON.stringify(path);
+                idx++;
+                if (node.children) {
+                    node.children.forEach((child, i) => walk(child, [...path, i]));
+                }
+            }
+            walk(mindmapTree, [0]);
+            svg.removeEventListener('dblclick', onMindmapDblClick);
+            svg.addEventListener('dblclick', onMindmapDblClick);
+        }
+
+        function onMindmapDblClick(e) {
+            const foreignDiv = e.target.closest('.markmap-foreign');
+            if (!foreignDiv) return;
+            if (foreignDiv.getAttribute('contenteditable') === 'true') return;
+            e.stopPropagation();
+            const orig = foreignDiv.textContent;
+            foreignDiv.setAttribute('data-original', orig);
+            foreignDiv.setAttribute('contenteditable', 'true');
+            foreignDiv.classList.add('mindmap-editing');
+            const range = document.createRange();
+            range.selectNodeContents(foreignDiv);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            let editingDone = false;
+            const done = () => {
+                if (editingDone) return;
+                editingDone = true;
+                finishMindmapEdit(foreignDiv);
+            };
+            const keydown = (ke) => {
+                if (ke.key === 'Escape') {
+                    foreignDiv.textContent = orig;
+                    done();
+                } else if (ke.key === 'Enter' && !ke.shiftKey) {
+                    ke.preventDefault();
+                    done();
+                }
+            };
+            foreignDiv.addEventListener('keydown', keydown);
+            foreignDiv.addEventListener('blur', done, { once: true });
+            foreignDiv._mindmapKeydown = keydown;
+        }
+
+        function finishMindmapEdit(div) {
+            div.removeAttribute('contenteditable');
+            div.classList.remove('mindmap-editing');
+            if (div._mindmapKeydown) {
+                div.removeEventListener('keydown', div._mindmapKeydown);
+                delete div._mindmapKeydown;
+            }
+            const newText = div.textContent;
+            const orig = div.getAttribute('data-original');
+            div.removeAttribute('data-original');
+            if (!orig || newText === orig) return;
+            const nodeG = div.closest('.markmap-node');
+            const pathStr = nodeG ? nodeG.dataset.treePath : null;
+            if (!pathStr || !mindmapTree) return;
+            const path = JSON.parse(pathStr);
+            let node = mindmapTree;
+            for (let i = 1; i < path.length; i++) {
+                if (!node.children || !node.children[path[i]]) return;
+                node = node.children[path[i]];
+            }
+            node.content = newText;
+            const md = serializeTreeToMarkdown(mindmapTree).trim();
+            if (currentMindmapPreviewInstance) {
+                currentMindmapPreviewInstance.setData({ root: mindmapTree });
+                setTimeout(attachMindmapInlineEdit, 100);
+            }
+        }
+
+        function serializeTreeToMarkdown(node, depth) {
+            if (depth === undefined) depth = 0;
+            const indent = '  '.repeat(depth);
+            let line;
+            if (depth === 0) {
+                line = `# ${node.content}`;
+            } else {
+                line = `${indent}- ${node.content}`;
+            }
+            let result = line + '\n';
+            if (node.children) {
+                for (const child of node.children) {
+                    result += serializeTreeToMarkdown(child, depth + 1);
+                }
+            }
+            return result;
+        }
+
+        // ==================== 初始化 ====================
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(err => console.error('Service Worker Registration Failed', err));
+        }
+
+        // 启动时检查会话
+        document.addEventListener('DOMContentLoaded', checkSession);
+    </script>
+</body>
+
+</html>
